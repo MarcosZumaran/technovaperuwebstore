@@ -1,0 +1,97 @@
+Atributos de las clases:
+
+    CarritoModel:
+        int id
+        LocalDateTime fecha_creacion;
+
+    CategoriaModel:
+        int id;
+        String nombre;
+        String descripcion;
+
+    ComentarioModel:
+        int id;
+        int id_usuario;
+        int id_producto;
+        String texto;
+        int calificacion;
+        EstadoComentario estado; // es un ENUM
+        LocalDateTime fecha_creacion;
+        LocalDateTime fecha_modificacion;
+
+    DetallePedidoModel:
+        int id;
+        int id_pedido;
+        int id_producto;
+        int cantidad;
+        BigDecimal precio_unitario;
+
+    FavoritosModel:
+        int id;
+        int id_usuario;
+        int id_producto;
+        LocalDateTime fecha_agregado;
+
+    HistorialPedidosModel:
+        int id;
+        int id_pedido;
+        EstadoHistorialPedidos estado; // Es un ENUM
+        LocalDateTime fecha_estado;
+
+    ItemCarritoModel:
+        int id;
+        int id_carrito;
+        int id_producto;
+        int cantidad;
+        LocalDateTime fecha_agregado;
+
+    PedidoModel:
+        int id;
+        int id_usuario;
+        LocalDateTime fecha_pedido;
+        EstadoPedido estado; // Es un ENUM
+        BigDecimal total;
+        String direccion_envio
+
+    ProductoImagenGaleriaModel:
+        int id;
+        int id_producto;
+        String url;
+
+    ProductoImagenPortadaModel:
+        int id;
+        int id_producto;
+        String url;
+
+    ProductoModel:
+        int id;
+        int id_proveedor;
+        String nombre;
+        String descripcion;
+        BigDecimal precio;
+        BigDecimal descuento;
+        int stock;
+        boolean activo;
+        LocalDateTime fecha_registro;
+        LocalDateTime fecha_actualizacion;
+
+    ProveedorModel:
+        int id;
+        String Nombre;
+        String direccion;
+        String telefono;
+        String email;
+        String pais;
+
+    UsuarioModel:
+        int id;
+        String nombre;
+        String apellido;
+        String email;
+        String password;
+        String direccion
+        String telefono;
+        boolean activo;
+        LocalDateTime fechaRegistro;
+        LocalDateTime fechaModificacion;
+        int id_carrito;
