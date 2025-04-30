@@ -69,12 +69,12 @@ public class ItemCarritoModel {
     }
 
     /**
-     * Method executed before persisting the object to the database.
-     * Sets the 'fecha_agregado' field to the current date and time.
+     * Metodo que se ejecuta antes de persistir el objeto en la base de datos.
+     * Establece la fecha de creacion a la fecha y hora actual.
      */
     @PrePersist
     public void prePersist() {
+        // Establece la fecha de creaci n a la fecha y hora actual
         this.fecha_agregado = LocalDateTime.now();
     }
-
 }
