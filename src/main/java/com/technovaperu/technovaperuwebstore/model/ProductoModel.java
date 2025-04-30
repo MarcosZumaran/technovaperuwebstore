@@ -38,77 +38,87 @@ public class ProductoModel {
 
     /**
      * Identificador único del producto.
+     * Es un auto-incremental que se va a ir incrementando cada vez que se
+     * cree un nuevo producto.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto Increment
     private int id;
 
+    /**
+     * El proveedor que suministra el producto.
+     */
     @ManyToOne
     @JoinColumn(name = "id_proveedor", nullable = false)
     private ProveedorModel proveedor;
 
     /**
-     * Nombre del producto.
+     * El nombre del producto.
      */
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
     /**
-     * Descripción del producto.
+     * La descripción del producto, que puede tener un
+     * largo indefinido.
      */
     @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
     /**
-     * Precio del producto.
+     * El precio del producto, con una precisión de 2 decimales.
      */
     @Column(name = "precio", nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
     /**
-     * Porcentaje de descuento, por defecto 0%.
+     * El descuento aplicado al producto, con una precisión de 2 decimales.
+     * Por defecto es 0%.
      */
     @Column(name = "descuento", nullable = false, precision = 5, scale = 2)
     private BigDecimal descuento = BigDecimal.ZERO; 
 
     /**
-     * Cantidad de stock disponible.
+     * La cantidad de stock disponible del producto.
      */
     @Column(name = "stock", nullable = false)
     private int stock;
 
     /**
-     * Estado activo del producto, por defecto true.
+     * El estado activo del producto, que determina si el producto se muestra o no
+     * en la tienda. Por defecto es true.
      */
     @Column(name = "activo", nullable = false)
     private boolean activo = true; 
 
     /**
-     * Fecha de registro del producto, no actualizable.
+     * La fecha de registro del producto, que no se puede actualizar.
      */
     @Column(name = "fecha_registro", updatable = false, nullable = false)
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     /**
-     * Fecha de última actualización del producto.
+     * La fecha de última actualización del producto.
      */
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion = LocalDateTime.now();
 
     /**
-     * Relación 1:1 con la imagen de portada.
+     * La imagen de portada del producto, que se va a mostrar en la lista de
+     * productos.
      */
     @OneToOne(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private ProductoImagenPortadaModel imagenPortada;
 
     /**
-     * Relación 1:N con la galería de imágenes.
+     * La galería de imágenes del producto, que se va a mostrar en la vista de
+     * detalles del producto.
      */
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ProductoImagenGaleriaModel> imagenesGaleria = new ArrayList<>();
 
     /**
-     * Relación con categorías del producto.
+     * Las categorías que se relacionan con el producto.
      */
     @ManyToMany
     @JoinTable(
@@ -118,15 +128,27 @@ public class ProductoModel {
     )
     private Set<CategoriaModel> categorias = new HashSet<>();
 
+    /**
+     * Los items del carrito que se relacionan con el producto.
+     */
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemCarritoModel> items = new ArrayList<>();
 
+    /**
+     * Los comentarios que se relacionan con el producto.
+     */
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ComentarioModel> comentarios = new ArrayList<>();
 
+    /**
+     * Los favoritos que se relacionan con el producto.
+     */
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FavoritosModel> favoritos = new ArrayList<>();
 
+    /**
+     * Los detalles de pedidos que se relacionan con el producto.
+     */
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedidoModel> detalles = new ArrayList<>();
 

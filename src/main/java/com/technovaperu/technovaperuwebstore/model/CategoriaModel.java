@@ -42,6 +42,10 @@ public class CategoriaModel {
     @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
+    /**
+     * Constructor que recibe el nombre y la descripción de la categoría.
+     * Asocia un producto con la categoría.
+     */
     public CategoriaModel(String nombre, String descripcion, ProductoModel producto) {
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -52,7 +56,10 @@ public class CategoriaModel {
     @ManyToMany(mappedBy = "categorias")
     private Set<ProductoModel> productos = new HashSet<>(); // Relación con productos
 
-    // Constructor personalizado para facilitar la creación de instancias sin productos asociados
+    /**
+     * Constructor que recibe el nombre y la descripción de la categoría.
+     * No asocia un producto con la categoría.
+     */
     public CategoriaModel(String nombre, String descripcion) {
         this.nombre = nombre;
         this.descripcion = descripcion;

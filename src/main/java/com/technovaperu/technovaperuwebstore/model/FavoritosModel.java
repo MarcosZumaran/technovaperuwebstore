@@ -28,6 +28,9 @@ public class FavoritosModel {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    /**
+     * Campo que representa el identificador unico del registro en la base de datos.
+     */
     private int id;
 
     /**
@@ -35,6 +38,9 @@ public class FavoritosModel {
      */
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)
+    /**
+     * Campo que representa el usuario que ha agregado el producto a favoritos.
+     */
     private UsuarioModel usuario;
 
     /**
@@ -42,12 +48,18 @@ public class FavoritosModel {
      */
     @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
+    /**
+     * Campo que representa el producto agregado a favoritos.
+     */
     private ProductoModel producto;
     
     /**
      * Fecha y hora en que se agreg o el producto a favoritos.
      */
     @Column(name = "fecha_agregado", nullable = false)
+    /**
+     * Campo que representa la fecha y hora en que se agreg o el producto a favoritos.
+     */
     private LocalDateTime fecha_agregado;
 
     public FavoritosModel(UsuarioModel usuario, ProductoModel producto) {

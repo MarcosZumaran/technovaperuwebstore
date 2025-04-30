@@ -25,25 +25,46 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProveedorModel {
 
+    /**
+     * Identificador único del proveedor.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id; // Identificador único del proveedor
+    private int id;
     
+    /**
+     * Nombre del proveedor.
+     */
     @Column(name = "nombre", nullable = false, length = 100)
-    private String nombre; // Nombre del proveedor
+    private String nombre;
     
+    /**
+     * Dirección del proveedor.
+     */
     @Column(name = "direccion", nullable = false, length = 255)
-    private String direccion; // Dirección del proveedor
+    private String direccion;
     
+    /**
+     * Teléfono del proveedor.
+     */
     @Column(name = "telefono", nullable = false, length = 20)
-    private String telefono; // Teléfono del proveedor
+    private String telefono;
     
+    /**
+     * Correo electrónico del proveedor.
+     */
     @Column(name = "email", nullable = false, length = 255)
-    private String email; // Correo electrónico del proveedor
+    private String email;
     
+    /**
+     * País del proveedor.
+     */
     @Column(name = "pais", nullable = false, length = 255)
-    private String pais; // País del proveedor
+    private String pais;
 
+    /**
+     * Lista de productos asociados con el proveedor.
+     */
     @OneToMany(mappedBy = "proveedor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductoModel> productos = new ArrayList<>();
 

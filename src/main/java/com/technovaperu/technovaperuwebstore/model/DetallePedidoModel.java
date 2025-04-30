@@ -25,6 +25,9 @@ import lombok.NoArgsConstructor;
 public class DetallePedidoModel {
     /**
      * Identificador numérico único del detalle de pedido.
+     * 
+     * Este campo es auto-incrementable y se utiliza como clave
+     * primaria para el detalle de pedido.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto Increment
@@ -32,6 +35,9 @@ public class DetallePedidoModel {
 
     /**
      * Pedido al que pertenece este detalle de pedido.
+     * 
+     * Este campo se relaciona con la tabla "pedido" y se utiliza para
+     * obtener el pedido al que se le ha agregado este detalle de pedido.
      */
     @ManyToOne
     @JoinColumn(name = "id_pedido", nullable = false)
@@ -39,6 +45,9 @@ public class DetallePedidoModel {
 
     /**
      * Producto que se esta vendiendo.
+     * 
+     * Este campo se relaciona con la tabla "producto" y se utiliza para
+     * obtener el producto que se esta vendiendo en este detalle de pedido.
      */
     @ManyToOne
     @JoinColumn(name = "id_producto", nullable = false)
@@ -46,12 +55,21 @@ public class DetallePedidoModel {
 
     /**
      * Cantidad de productos vendidos.
+     * 
+     * Este campo debe ser mayor a cero y se utiliza para calcular el
+     * subtotal del pedido.
      */
     @Column(name = "cantidad", nullable = false)
     private int cantidad;
 
     /**
      * Precio unitario del producto.
+     * 
+     * Este campo debe ser mayor a cero y se utiliza para calcular el
+     * subtotal del pedido.
+     * 
+     * El precio unitario debe ser un valor numérico con dos decimales,
+     * por ejemplo 10.99.
      */
     @Column(name = "precio_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal precio_unitario;

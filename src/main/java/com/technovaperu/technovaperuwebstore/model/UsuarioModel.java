@@ -19,6 +19,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,42 +41,60 @@ public class UsuarioModel {
     // Atributos de la clase
     /**
      * Nombre del usuario
+     * 
+     * @param nombre
      */
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
     /**
      * Apellido del usuario
+     * 
+     * @param apellido
      */
     @Column(name = "apellido", nullable = false, length = 100)
     private String apellido;
 
     /**
-     * Email del usuario
+     * Email del usuario, debe ser único y no nulo
+     * 
+     * Este campo almacena la dirección de correo electrónico del usuario
+     * y se valida para asegurar que el formato sea correcto.
+     * 
+     * @param email dirección de correo electrónico del usuario
      */
     @Column(name = "email", unique = true, nullable = false, length = 255)
+    @Email(message = "El email debe ser válido")
     private String email;
 
     /**
      * Contraseña del usuario
+     * 
+     * @param password
      */
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     /**
      * Dirección del usuario
+     * 
+     * @param direccion
      */
     @Column(name = "direccion", nullable = false, length = 255)
     private String direccion;
 
     /**
      * Teléfono del usuario
+     * 
+     * @param telefono
      */
     @Column(name = "telefono", nullable = false, length = 20)
     private String telefono;
 
     /**
      * Rol del usuario
+     * 
+     * @param rol
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false)
@@ -83,32 +102,52 @@ public class UsuarioModel {
 
     /**
      * Ssi esta o no activo el usuario
+     * 
+     * @param activo
      */
     @Column(name = "activo", nullable = false)
     private boolean activo;
 
     /**
-     * Fecha de creación
+     * Fecha de creación del usuario.
+     * Este campo es asignado automáticamente al persistir el objeto.
      */
     @Column(name = "fecha_registro", updatable = false, nullable = false)
     private LocalDateTime fechaRegistro;
 
     /**
-     * Fecha de modificación
+     * Fecha de la última modificación del usuario.
+     * Se actualiza automáticamente al modificar el objeto.
      */
     @Column(name = "fecha_modificacion", updatable = true, nullable = false)
     private LocalDateTime fechaModificacion;
 
+    /**
+     * Relación uno a uno con el carrito de compras del usuario.
+     * Cada usuario tiene un carrito único.
+     */
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_carrito", nullable = false, referencedColumnName = "id")
     private CarritoModel carrito;
 
+    /**
+     * Lista de pedidos realizados por el usuario.
+     * Relación uno a muchos entre usuario y pedidos.
+     */
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PedidoModel> pedidos = new ArrayList<>();
 
+    /**
+     * Comentarios realizados por el usuario en distintos productos.
+     * Relación uno a muchos entre usuario y comentarios.
+     */
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ComentarioModel> comentarios = new ArrayList<>();
 
+    /**
+     * Productos marcados como favoritos por el usuario.
+     * Relación uno a muchos entre usuario y favoritos.
+     */
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<FavoritosModel> favoritos = new ArrayList<>();
 

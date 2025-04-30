@@ -44,18 +44,30 @@ public class CarritoModel {
 
     /**
      * Fecha de creación del carrito.
+     * Se establece automáticamente antes de persistir.
      */
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fecha_creacion;
 
+    /**
+     * Lista de items en el carrito.
+     * Se carga perezosamente y se elimina en cascada.
+     */
     @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ItemCarritoModel> items = new ArrayList<>();
 
+    /**
+     * Constructor que inicializa el carrito con un cliente.
+     */
     public CarritoModel(UsuarioModel cliente) {
         this.cliente = cliente;
     }
 
-    @PrePersist // Método que se ejecuta al insertar un registro en la base de datos
+    /**
+     * Método que se ejecuta antes de insertar un registro en la base de datos.
+     * Establece la fecha de creación a la fecha y hora actual.
+     */
+    @PrePersist
     public void prePersist() {
         this.fecha_creacion = LocalDateTime.now();
     }

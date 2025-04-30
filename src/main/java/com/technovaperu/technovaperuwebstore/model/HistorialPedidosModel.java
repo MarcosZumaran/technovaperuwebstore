@@ -64,10 +64,34 @@ public class HistorialPedidosModel {
         this.fecha_estado = LocalDateTime.now();
     }
 
+    /**
+     * Enumerado que representa los posibles estados de un pedido.
+     * <ul>
+     * <li>{@link #PENDIENTE}: El pedido est  pendiente de ser preparado.</li>
+     * <li>{@link #ENVIADO}: El pedido ha sido enviado al cliente.</li>
+     * <li>{@link #ENTREGADO}: El pedido ha sido entregado al cliente.</li>
+     * <li>{@link #CANCELADO}: El pedido ha sido cancelado.</li>
+     * </ul>
+     */
     public enum EstadoHistorialPedidos {
+        /**
+         * El pedido est  pendiente de ser preparado.
+         */
         PENDIENTE,
+
+        /**
+         * El pedido ha sido enviado al cliente.
+         */
         ENVIADO,
+
+        /**
+         * El pedido ha sido entregado al cliente.
+         */
         ENTREGADO,
+
+        /**
+         * El pedido ha sido cancelado.
+         */
         CANCELADO
     }
 }
