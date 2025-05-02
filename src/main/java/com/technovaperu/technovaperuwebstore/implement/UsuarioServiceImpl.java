@@ -4,12 +4,16 @@ package com.technovaperu.technovaperuwebstore.implement;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 
 import com.technovaperu.technovaperuwebstore.services.UsuarioService;
 
+@Service
 public class UsuarioServiceImpl implements UsuarioService {
     
+    @Autowired
     private JdbcTemplate jdbcTemplate;
     
     @Override 

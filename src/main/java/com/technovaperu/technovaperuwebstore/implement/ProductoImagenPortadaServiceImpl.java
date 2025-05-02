@@ -3,12 +3,16 @@ package com.technovaperu.technovaperuwebstore.implement;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
 
 import com.technovaperu.technovaperuwebstore.services.ProductoImagenPortadaService;
 
+@Service
 public class ProductoImagenPortadaServiceImpl implements ProductoImagenPortadaService{
     
+    @Autowired
     private JdbcTemplate jdbcTemplate;
     
     @Override 
