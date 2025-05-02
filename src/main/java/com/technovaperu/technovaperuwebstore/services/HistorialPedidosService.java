@@ -1,14 +1,12 @@
 package com.technovaperu.technovaperuwebstore.services;
 
-import com.technovaperu.technovaperuwebstore.model.dto.base.HistorialPedidosDTO;
-import com.technovaperu.technovaperuwebstore.model.dto.create.CrearHistorialPedidosDTO;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import java.util.Map;
 public interface HistorialPedidosService {
-    List<HistorialPedidosDTO> obtenerHistorialPorPedido(int idPedido);
-    Page<HistorialPedidosDTO> obtenerHistorialPorPedidoPaginados(int idPedido, int pagina, int tamanoPagina); // Paginación añadida
-    HistorialPedidosDTO obtenerHistorialPorId(int id);
-    HistorialPedidosDTO crearHistorialPedido(CrearHistorialPedidosDTO dto);
-    void eliminarHistorialPedido(int id);
+    List<Map<String, Object>> obtenerHistorialPorPedido(int idPedido, int pagina);
+    Map<String, Object> obtenerHistorialPorId(int id);
+    String crearHistorialPedido(Map<String, Object> historial);
+    String actualizarHistorialPedido(int id, Map<String, Object> historial);
+    String eliminarHistorialPedido(int id);
+    int contarHistorialPedidos();
 }

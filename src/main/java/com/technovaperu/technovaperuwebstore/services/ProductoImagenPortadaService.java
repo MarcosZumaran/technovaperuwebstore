@@ -1,10 +1,12 @@
 package com.technovaperu.technovaperuwebstore.services;
 
-import com.technovaperu.technovaperuwebstore.model.dto.base.ProductoImagenPortadaDTO;
-import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProductoImagenPortadaDTO;
+import java.util.Map;
 
 public interface ProductoImagenPortadaService {
-    ProductoImagenPortadaDTO obtenerImagenPortadaPorProducto(int idProducto);
-    ProductoImagenPortadaDTO agregarImagenPortada(int idProducto, CrearProductoImagenPortadaDTO dto);
-    void eliminarImagenPortada(int idProducto);
+    Map<String, Object> obtenerImagenPortadaPorProducto(int idProducto);
+    Map<String, Object> obtenerImagenPortadaPorId(int id);
+    String crearImagenPortada(Map<String, Object> imagen);
+    String actualizarImagenPortada(int id, Map<String, Object> imagen);
+    String eliminarImagenPortada(int id);
+    int contarImagenesPortada();
 }

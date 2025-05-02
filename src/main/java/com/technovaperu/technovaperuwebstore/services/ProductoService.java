@@ -1,18 +1,15 @@
 package com.technovaperu.technovaperuwebstore.services;
 
-import com.technovaperu.technovaperuwebstore.model.dto.base.ProductoDTO;
-import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProductoDTO;
-import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProductoDTO;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import java.util.Map;
 
 public interface ProductoService {
-    List<ProductoDTO> listarProductos();
-    Page<ProductoDTO> listarProductosPaginados(int pagina, int tamanoPagina); // Paginación añadida
-    ProductoDTO obtenerProductoPorId(int id);
-    ProductoDTO crearProducto(CrearProductoDTO dto);
-    ProductoDTO actualizarProducto(int id, ActualizarProductoDTO dto);
-    void eliminarProducto(int id);
-    int contarProductosDisponibles();
+    List<Map<String, Object>> obtenerTodosLosProductos(int pagina);
+    List<Map<String, Object>> obtenerProductosPorCategoria(int idCategoria, int pagina);
+    Map<String, Object> obtenerProductoPorId(int id);
+    String crearProducto(Map<String, Object> producto);
+    String actualizarProducto(int id, Map<String, Object> producto);
+    String eliminarProducto(int id);
+    int contarProductosPorCategoria(int idCategoria);
+    int contarProductos();
 }

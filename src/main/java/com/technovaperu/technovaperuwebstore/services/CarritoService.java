@@ -1,14 +1,13 @@
 package com.technovaperu.technovaperuwebstore.services;
 
-import com.technovaperu.technovaperuwebstore.model.dto.base.CarritoDTO;
-import com.technovaperu.technovaperuwebstore.model.dto.base.ItemCarritoDTO;
-
-import java.util.List;
+import java.util.Map;
 
 public interface CarritoService {
-    CarritoDTO crearCarrito();
-    CarritoDTO obtenerCarritoPorId(int id);
-    List<ItemCarritoDTO> obtenerItemsDelCarrito(int idCarrito, int pagina);
+
+    Map<String, Object> obtenerCarritoPorId(int id);
+    String crearCarrito(Map<String, Object> carrito);
+    String actualizarCarrito(int id, Map<String, Object> carrito);
     String eliminarCarrito(int id);
     int contarCarritos();
+    
 }

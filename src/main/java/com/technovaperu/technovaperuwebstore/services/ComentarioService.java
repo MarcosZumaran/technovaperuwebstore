@@ -1,17 +1,14 @@
 package com.technovaperu.technovaperuwebstore.services;
 
-import com.technovaperu.technovaperuwebstore.model.dto.base.ComentarioDTO;
-import com.technovaperu.technovaperuwebstore.model.dto.create.CrearComentarioDTO;
-import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarComentarioDTO;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import java.util.Map;
 
 public interface ComentarioService {
-    List<ComentarioDTO> obtenerComentariosPorProducto(int idProducto);
-    Page<ComentarioDTO> obtenerComentariosPorProductoPaginados(int idProducto, int pagina, int tamanoPagina); // Paginación añadida
-    ComentarioDTO obtenerComentarioPorId(int id);
-    ComentarioDTO crearComentario(CrearComentarioDTO dto);
-    ComentarioDTO actualizarComentario(int id, ActualizarComentarioDTO dto);
-    void eliminarComentario(int id);
+    List<Map<String, Object>> obtenerComentariosPorProducto(int idProducto, int pagina);
+    Map<String, Object> obtenerComentarioPorId(int id);
+    String crearComentario(Map<String, Object> comentario);
+    String actualizarComentario(int id, Map<String, Object> comentario);
+    String eliminarComentario(int id);
+    int contarComentariosDeProducto(int idProducto);
+    int contarComentarios();
 }

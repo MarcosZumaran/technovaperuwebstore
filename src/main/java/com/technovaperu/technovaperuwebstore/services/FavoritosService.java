@@ -1,13 +1,13 @@
 package com.technovaperu.technovaperuwebstore.services;
 
-import com.technovaperu.technovaperuwebstore.model.dto.base.FavoritosDTO;
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import java.util.Map;
 
 public interface FavoritosService {
-    List<FavoritosDTO> obtenerFavoritosPorUsuario(int idUsuario);
-    Page<FavoritosDTO> obtenerFavoritosPorUsuarioPaginados(int idUsuario, int pagina, int tamanoPagina); // Paginación añadida
-    FavoritosDTO agregarFavorito(int idUsuario, int idProducto);
-    void eliminarFavorito(int idUsuario, int idProducto);
+    List<Map<String, Object>> obtenerFavoritosPorUsuario(int idUsuario, int pagina);
+    Map<String, Object> obtenerFavoritoPorId(int id);
+    String crearFavorito(Map<String, Object> favorito);
+    String actualizarFavorito(int id, Map<String, Object> favorito);
+    String eliminarFavorito(int id);
+    int contarFavoritos();
 }

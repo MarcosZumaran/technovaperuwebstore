@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class CrearDetallePedidoDTO {
+    private int idPedido;
     private int idProducto;
     private int cantidad;
     private BigDecimal precioUnitario;
