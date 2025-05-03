@@ -20,47 +20,47 @@ public class PedidoServiceImpl implements PedidoService{
         if (pagina <= 0) pagina = 1;
         int offset = (pagina - 1) * 10;
         int limit = 10;
-        String sql = "SELECT * FROM pedidos WHERE id_usuario = ? ORDER BY fecha_agregado DESC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM pedido WHERE id_usuario = ? ORDER BY fecha_pedido DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.queryForList(sql, idUsuario, limit, offset);
     }
 
     @Override 
     public Map<String, Object> obtenerPedidoPorId(int id){
-        String sql = "SELECT * FROM pedidos WHERE id = ?";
+        String sql = "SELECT * FROM pedido WHERE id = ?";
         return jdbcTemplate.queryForMap(sql, id);
     }
 
     @Override 
     public String crearPedido(Map<String, Object> pedido){
-        String sql = "INSERT INTO pedidos (id_usuario, direccion_envio) VALUES(?, ?)";
-        jdbcTemplate.update(sql, pedido.get("id_usuario"), pedido.get("direccion_envio"));
+        String sql = "INSERT INTO pedido (id_usuario, direccion_envio, total, estado) VALUES(?, ?, ?, ?)";
+        jdbcTemplate.update(sql, pedido.get("id_usuario"), pedido.get("direccion_envio"), pedido.get("total"), pedido.get("estado"));
         return "Pedido creado con éxito.";
     }
     
     @Override 
     public String actualizarPedido(int id, Map<String, Object> pedido){
-        String sql = "UPDATE pedidos SET direccion_envio = ? WHERE id = ?";
+        String sql = "UPDATE pedido SET direccion_envio = ? WHERE id = ?";
         jdbcTemplate.update(sql, pedido.get("direccion_envio"), id);
         return "Pedido actualizado con éxito.";
     }
     
     @Override 
     public String eliminarPedido(int id){
-        String sql = "DELETE FROM pedidos WHERE id = ?";
+        String sql = "DELETE FROM pedido WHERE id = ?";
         jdbcTemplate.update(sql, id);
         return "Pedido eliminado con éxito.";
     }
 
     @Override 
     public int contarPedidosPorUsuario(int idUsuario){
-        String sql = "SELECT COUNT(id) FROM pedidos WHERE id_usuario = ?";
+        String sql = "SELECT COUNT(id) FROM pedido WHERE id_usuario = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return (count != null) ? count : 0;
     }
     
     @Override 
     public int contarPedidos(){
-        String sql = "SELECT COUNT(id) FROM pedidos";
+        String sql = "SELECT COUNT(id) FROM pedido";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return (count != null) ? count : 0;
     }

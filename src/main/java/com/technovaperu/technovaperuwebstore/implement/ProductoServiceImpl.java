@@ -20,7 +20,7 @@ public class ProductoServiceImpl implements ProductoService {
         if (pagina <= 0) pagina = 1;
         int offset = (pagina - 1) * 10;
         int limit = 10;
-        String sql = "SELECT * FROM productos ORDER BY id_producto DESC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM producto ORDER BY id_producto DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.queryForList(sql, limit, offset);
     }
 
@@ -29,47 +29,47 @@ public class ProductoServiceImpl implements ProductoService {
         if (pagina <= 0) pagina = 1;
         int offset = (pagina - 1) * 10;
         int limit = 10;
-        String sql = "SELECT * FROM productos WHERE id_categoria = ? ORDER BY id_producto DESC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM producto_categoria WHERE id_categoria = ? ORDER BY id_producto DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.queryForList(sql, idCategoria, limit, offset);
     }
 
     @Override 
     public Map<String, Object> obtenerProductoPorId(int id){
-        String sql = "SELECT * FROM productos WHERE id = ?";
+        String sql = "SELECT * FROM producto WHERE id = ?";
         return jdbcTemplate.queryForMap(sql, id);
     }
 
     @Override 
     public String crearProducto(Map<String, Object> producto){
-        String sql = "INSERT INTO productos (id_proveedor, nombre, descripcion, precio, descuento, stock) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO producto (id_proveedor, nombre, descripcion, precio, descuento, stock) VALUES(?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, producto.get("id_proveedor"), producto.get("nombre"), producto.get("descripcion"), producto.get("precio"), producto.get("descuento"), producto.get("stock"));
         return "Producto creado con éxito.";
     }
     
     @Override 
     public String actualizarProducto(int id, Map<String, Object> producto){
-        String sql = "UPDATE productos SET id_proveedor = ?, nombre = ?, descripcion = ?, precio = ?, descuento = ?, stock = ? WHERE id = ?";
+        String sql = "UPDATE producto SET id_proveedor = ?, nombre = ?, descripcion = ?, precio = ?, descuento = ?, stock = ? WHERE id = ?";
         jdbcTemplate.update(sql, producto.get("id_proveedor"), producto.get("nombre"), producto.get("descripcion"), producto.get("precio"), producto.get("descuento"), producto.get("stock"), id);
         return "Producto actualizado con éxito.";
     }
     
     @Override 
     public String eliminarProducto(int id){
-        String sql = "DELETE FROM productos WHERE id = ?";
+        String sql = "DELETE FROM producto WHERE id = ?";
         jdbcTemplate.update(sql, id);
         return "Producto eliminado con éxito.";
     }
 
     @Override 
     public int contarProductosPorCategoria(int idCategoria){
-        String sql = "SELECT COUNT(id) FROM productos WHERE id_categoria = ?";
+        String sql = "SELECT COUNT(id) FROM producto WHERE id_categoria = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return (count != null) ? count : 0;
     }
     
     @Override 
     public int contarProductos(){
-        String sql = "SELECT COUNT(id) FROM productos";
+        String sql = "SELECT COUNT(id) FROM producto";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return (count != null) ? count : 0;
     }

@@ -21,7 +21,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
         if (pagina <= 0) pagina = 1;
         int offset = (pagina - 1) * 10;
         int limit = 10;
-        String sql = "SELECT * FROM historial_pedidos WHERE id_pedido = ? ORDER BY fecha_agregado DESC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM historial_pedidos WHERE id_pedido = ? ORDER BY fecha_estado DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.queryForList(sql, idPedido, limit, offset);
     }
 

@@ -20,7 +20,7 @@ public class DetallePedidoServiceImpl implements DetallePedidoService{
         if (pagina <= 0) pagina = 1;
         int offset = (pagina - 1) * 10;
         int limit = 10;
-        String sql = "SELECT * FROM detalle_pedido WHERE id_pedido = ? ORDER BY fecha_agregado DESC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM detalle_pedido WHERE id_pedido = ? ORDER BY id DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.queryForList(sql, idPedido, limit, offset);
     }
 

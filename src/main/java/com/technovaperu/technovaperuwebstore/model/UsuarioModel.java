@@ -126,8 +126,7 @@ public class UsuarioModel {
      * Relación uno a uno con el carrito de compras del usuario.
      * Cada usuario tiene un carrito único.
      */
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_carrito", nullable = false, referencedColumnName = "id")
+    @OneToOne(mappedBy = "usuario")
     private CarritoModel carrito;
 
     /**

@@ -4,14 +4,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.technovaperu.technovaperuwebstore.services.DetallePedidoService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
+@RestController
+@RequestMapping("/detallePedido")
 public class DetallePedidoRestController {
 
     @Autowired
@@ -37,7 +42,7 @@ public class DetallePedidoRestController {
         return detallePedidoService.actualizarDetallePedido(id, detallePedido);
     }
 
-    @GetMapping("/deleteDetallePedido/{id}")
+    @DeleteMapping("/deleteDetallePedido/{id}")
     public String delete(@PathVariable int id) {
         return detallePedidoService.eliminarDetallePedido(id);
     }

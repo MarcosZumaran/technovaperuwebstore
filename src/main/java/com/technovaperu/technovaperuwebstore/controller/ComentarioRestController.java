@@ -14,7 +14,7 @@ import com.technovaperu.technovaperuwebstore.services.ComentarioService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/comentarios")
+@RequestMapping("/comentario")
 public class ComentarioRestController {
     
     @Autowired

@@ -19,7 +19,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -104,18 +103,11 @@ public class ProductoModel {
     private LocalDateTime fechaActualizacion = LocalDateTime.now();
 
     /**
-     * La imagen de portada del producto, que se va a mostrar en la lista de
-     * productos.
-     */
-    @OneToOne(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private ProductoImagenPortadaModel imagenPortada;
-
-    /**
      * La galería de imágenes del producto, que se va a mostrar en la vista de
      * detalles del producto.
      */
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<ProductoImagenGaleriaModel> imagenesGaleria = new ArrayList<>();
+    private List<ProductolImagenModel> imagenes = new ArrayList<>();
 
     /**
      * Las categorías que se relacionan con el producto.

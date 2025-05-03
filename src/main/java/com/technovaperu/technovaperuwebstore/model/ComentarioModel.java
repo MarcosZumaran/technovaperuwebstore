@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -61,6 +63,7 @@ public class ComentarioModel {
     /**
      * Estado del comentario. Puede ser VISIBLE, OCULTO o BORRADO.
      */
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false) // Columna de estado
     private EstadoComentario estado = EstadoComentario.VISIBLE;
 
@@ -122,6 +125,6 @@ public class ComentarioModel {
         /**
          * El comentario es invisible.
          */
-        HIDDEN
+        OCULTO
     }
 }

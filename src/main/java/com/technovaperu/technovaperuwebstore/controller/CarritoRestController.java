@@ -21,7 +21,7 @@ public class CarritoRestController {
     @Autowired
     private CarritoService carritoService;
 
-    @GetMapping("getCarrito/{id}")
+    @GetMapping("/getCarrito/{id}")
     public Map<String, Object> getCarrito(@PathVariable int id) {
         return carritoService.obtenerCarritoPorId(id);
     }
@@ -31,7 +31,7 @@ public class CarritoRestController {
         return carritoService.crearCarrito(carrito);
     }
 
-    @PostMapping("updateCarrito/{id}")
+    @PostMapping("/updateCarrito/{id}")
     public String update(@PathVariable int id, @RequestBody Map<String, Object> carrito) {
         return carritoService.actualizarCarrito(id, carrito);
     }
@@ -41,7 +41,7 @@ public class CarritoRestController {
         return carritoService.eliminarCarrito(id);
     }
 
-    @GetMapping("getTotalCarritos")
+    @GetMapping("/getTotalCarritos")
     public int getTotal() {
         return carritoService.contarCarritos();
     }

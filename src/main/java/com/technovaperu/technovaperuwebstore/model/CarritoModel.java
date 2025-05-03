@@ -11,6 +11,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
@@ -39,8 +40,9 @@ public class CarritoModel {
      * Relación con el usuario que posee el carrito.
      * La columna en la base de datos se llama 'id_cliente'.
      */
-    @OneToOne(mappedBy = "carrito")
-    private UsuarioModel cliente;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private UsuarioModel usuario;
 
     /**
      * Fecha de creación del carrito.
@@ -59,8 +61,8 @@ public class CarritoModel {
     /**
      * Constructor que inicializa el carrito con un cliente.
      */
-    public CarritoModel(UsuarioModel cliente) {
-        this.cliente = cliente;
+    public CarritoModel(UsuarioModel usuario) {
+        this.usuario = usuario;
     }
 
     /**

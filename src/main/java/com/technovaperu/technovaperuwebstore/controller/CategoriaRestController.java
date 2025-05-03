@@ -16,7 +16,7 @@ import com.technovaperu.technovaperuwebstore.services.CategoriaService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/categorias")
+@RequestMapping("/categoria")
 public class CategoriaRestController {
     
     @Autowired

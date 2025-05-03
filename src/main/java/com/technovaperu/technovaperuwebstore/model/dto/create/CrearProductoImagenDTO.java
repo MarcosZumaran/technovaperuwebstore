@@ -1,4 +1,6 @@
-package com.technovaperu.technovaperuwebstore.model.dto.base;
+package com.technovaperu.technovaperuwebstore.model.dto.create;
+
+import com.technovaperu.technovaperuwebstore.model.ProductolImagenModel.Tipo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductoImagenPortadaDTO {
-    private int id;
+public class CrearProductoImagenDTO {
+    
     private int idProducto;
     private String url;
+    private Tipo tipo;
+    
 }
