@@ -1,15 +1,17 @@
 package com.technovaperu.technovaperuwebstore.services;
 
 import java.util.List;
-import java.util.Map;
+
+import com.technovaperu.technovaperuwebstore.model.dto.base.CategoriaDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearCategoriaDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarCategoriaDTO;
 
 public interface CategoriaService {
-    
-    List<Map<String, Object>> obtenerTodasLasCategorias();
-    Map<String, Object> obtenerCategoriaPorId(int id);
-    String crearCategoria(Map<String, Object> categoria);
-    String actualizarCategoria(int id, Map<String, Object> categoria);
-    String eliminarCategoria(int id);
+    List<CategoriaDTO> obtenerTodasLasCategorias();
+    CategoriaDTO obtenerCategoriaPorId(int id);
+    CategoriaDTO crearCategoria(CrearCategoriaDTO categoria);
+    CategoriaDTO actualizarCategoria(int id, ActualizarCategoriaDTO categoria);
+    void eliminarCategoria(int id);
     int contarCategorias();
-
+    boolean existeCategoriaPorId(int id);
 }

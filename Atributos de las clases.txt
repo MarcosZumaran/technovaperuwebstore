@@ -2,6 +2,7 @@ Atributos de las clases:
 
     CarritoModel:
         int id
+        int id_usuario;
         LocalDateTime fecha_creacion;
 
     CategoriaModel:
@@ -94,4 +95,3 @@ Atributos de las clases:
         boolean activo;
         LocalDateTime fechaRegistro;
         LocalDateTime fechaModificacion;
-        int id_carrito;
