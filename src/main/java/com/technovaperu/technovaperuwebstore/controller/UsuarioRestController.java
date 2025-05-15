@@ -1,9 +1,10 @@
 package com.technovaperu.technovaperuwebstore.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technovaperu.technovaperuwebstore.model.dto.base.UsuarioDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearUsuarioDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarUsuarioDTO;
 import com.technovaperu.technovaperuwebstore.services.UsuarioService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -20,42 +24,48 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 @RequestMapping("/usuario")
 public class UsuarioRestController {
 
-    @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    public UsuarioRestController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
     @GetMapping
-    public List<Map<String, Object>> getAll(@RequestParam(defaultValue = "1") int page){
-        return usuarioService.obtenerTodosLosUsuarios(page);
+    public ResponseEntity<List<UsuarioDTO>> obtenerTodosLosUsuarios(@RequestParam(defaultValue = "1") int page){
+        List<UsuarioDTO> usuarios = usuarioService.obtenerTodosLosUsuarios(page);
+        return ResponseEntity.ok(usuarios);
     }
 
     @GetMapping("/getUsuario/{id}")
-    public Map<String, Object> getUsuario(@PathVariable int id){
-        return usuarioService.obtenerUsuarioPorId(id);
-    }
-
-    @GetMapping("/getCarritoUsuario/{id}")
-    public int getCarritoUsuario(@PathVariable int id){
-        return usuarioService.obtenerCarritoDeUsuario(id);
+    public ResponseEntity<UsuarioDTO> obtenerUsuarioPorId(@PathVariable int id){
+        UsuarioDTO usuario = usuarioService.obtenerUsuarioPorId(id);
+        return ResponseEntity.ok(usuario);
     }
 
     @PostMapping
-    public String create(@RequestBody Map<String, Object> usuario){
-        return usuarioService.crearUsuario(usuario);
+    public ResponseEntity<UsuarioDTO> crearUsuario(@RequestBody CrearUsuarioDTO usuario){
+        UsuarioDTO user = usuarioService.crearUsuario(usuario);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
+
     }
 
     @PostMapping("/updateUsuario/{id}")
-    public String update(@PathVariable int id, @RequestBody Map<String, Object> usuario){
-        return usuarioService.actualizarUsuario(id, usuario);
+    public ResponseEntity<Void> actualizarUsuario(@PathVariable int id, @RequestBody ActualizarUsuarioDTO updates){
+        usuarioService.actualizarUsuario(id, updates);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/deleteUsuario/{id}")
-    public String delete(@PathVariable int id){
-        return usuarioService.eliminarUsuario(id);
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable int id){
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/countUsuarios")
-    public int count(){
-        return usuarioService.contarUsuarios();
+    public ResponseEntity<Integer> contarUsuarios(){
+        int cantidad = usuarioService.contarUsuarios();
+        return ResponseEntity.ok(cantidad);
     }
     
 }

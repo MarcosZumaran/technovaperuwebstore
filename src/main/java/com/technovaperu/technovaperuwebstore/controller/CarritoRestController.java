@@ -23,8 +23,12 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
 public class CarritoRestController {
 
+    private final CarritoService carritoService;
+
     @Autowired
-    private CarritoService carritoService;
+    public CarritoRestController(CarritoService carritoService) {
+        this.carritoService = carritoService;
+    }
     
     @GetMapping("/{id}")
     public ResponseEntity<CarritoDTO> obtenerCarrito(@PathVariable int id) {

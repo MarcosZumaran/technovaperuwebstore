@@ -1,8 +1,10 @@
 package com.technovaperu.technovaperuwebstore.controller;
 
 import java.util.List;
-import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technovaperu.technovaperuwebstore.model.dto.base.PedidoDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearPedidoDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarPedidoDTO;
 import com.technovaperu.technovaperuwebstore.services.PedidoService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -18,41 +23,53 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 @RequestMapping("/pedido")
 public class PedidoRestController {
 
-    private PedidoService pedidoService;
+    private final PedidoService pedidoService;
+
+    @Autowired
+    public PedidoRestController(PedidoService pedidoService) {
+        this.pedidoService = pedidoService;
+    }
 
     @GetMapping("/getPedidoByUsuario/{id}")
-    public List<Map<String, Object>> getPedidoByUsuario(@PathVariable int id, @RequestParam(defaultValue = "1") int pagina) {
-        return pedidoService.obtenerPedidosPorUsuario(id, pagina);
+    public ResponseEntity<List<PedidoDTO>> obtenerPedidosPorUsuario(@PathVariable int id, @RequestParam(name = "pagina", required = false, defaultValue = "1") int pagina) {
+        List<PedidoDTO> pedidos = pedidoService.obtenerPedidosPorUsuario(id, pagina);
+        return ResponseEntity.ok(pedidos);
     }
 
     @GetMapping("/getPedido/{id}")
-    public Map<String, Object> getPedido(@PathVariable int id) {
-        return pedidoService.obtenerPedidoPorId(id);
+    public ResponseEntity<PedidoDTO> obtenerPedidoPorId(@PathVariable int id) {
+        PedidoDTO pedido = pedidoService.obtenerPedidoPorId(id);
+        return ResponseEntity.ok(pedido);
     }
 
     @PostMapping
-    public String create(@RequestBody Map<String, Object> pedido) {
-        return pedidoService.crearPedido(pedido);
+    public ResponseEntity<PedidoDTO> crearPedido(@RequestBody CrearPedidoDTO pedido) {
+        PedidoDTO pedidoCreado = pedidoService.crearPedido(pedido);
+        return new ResponseEntity<>(pedidoCreado, HttpStatus.CREATED);
     }
 
     @PostMapping("/updatePedido/{id}")
-    public String update(@PathVariable int id, @RequestBody Map<String, Object> pedido) {
-        return pedidoService.actualizarPedido(id, pedido);
+    public ResponseEntity<PedidoDTO> actualizarPedido(@PathVariable int id, @RequestBody ActualizarPedidoDTO pedido) {
+        pedidoService.actualizarPedido(id, pedido);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/deletePedido/{id}")
-    public String delete(@PathVariable int id) {
-        return pedidoService.eliminarPedido(id);
+    public ResponseEntity<Void> eliminarPedido(@PathVariable int id) {
+        pedidoService.eliminarPedido(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/countPedidosByUsuario/{id}")
-    public int countPedidosByUsuario(@PathVariable int id) {
-        return pedidoService.contarPedidosPorUsuario(id);
+    public ResponseEntity<Integer> contarPedidosPorUsuario(@PathVariable int id) {
+        int cantidad = pedidoService.contarPedidosPorUsuario(id);
+        return ResponseEntity.ok(cantidad);
     }
 
     @GetMapping("/countPedidos")
-    public int count() {
-        return pedidoService.contarPedidos();
+    public ResponseEntity<Integer> contarPedidos() {
+        int cantidad = pedidoService.contarPedidos();
+        return ResponseEntity.ok(cantidad);
     }
     
 }

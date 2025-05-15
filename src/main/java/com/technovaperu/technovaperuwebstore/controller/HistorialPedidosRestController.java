@@ -1,9 +1,10 @@
 package com.technovaperu.technovaperuwebstore.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technovaperu.technovaperuwebstore.model.dto.base.HistorialPedidosDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearHistorialPedidosDTO;
 import com.technovaperu.technovaperuwebstore.services.HistorialPedidosService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -20,37 +23,41 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 @RequestMapping("/historialPedidos")
 public class HistorialPedidosRestController {
 
+    private final HistorialPedidosService historialPedidosService;
+
     @Autowired
-    private HistorialPedidosService historialPedidosService;
+    public HistorialPedidosRestController(HistorialPedidosService historialPedidosService) {
+        this.historialPedidosService = historialPedidosService;
+    }
 
     @GetMapping("/getHistorialPedidosByPedido/{id}")
-    public List<Map<String, Object>> getHistorialPedidosByPedido(@PathVariable int id, @RequestParam(defaultValue = "1") int pagina) {
-        return historialPedidosService.obtenerHistorialPorPedido(id, pagina);
+    public ResponseEntity<List<HistorialPedidosDTO>> obtenerHistorialPorPedido(@PathVariable int id, @RequestParam(name = "pagina", required = false, defaultValue = "1") int pagina) {
+        List<HistorialPedidosDTO> historialPedidos = historialPedidosService.obtenerHistorialPorPedido(id, pagina);
+        return ResponseEntity.ok(historialPedidos);
     }
 
     @GetMapping("/getHistorialPedido/{id}")
-    public Map<String, Object> getHistorialPedido(@PathVariable int id) {
-        return historialPedidosService.obtenerHistorialPorId(id);
+    public ResponseEntity<HistorialPedidosDTO> obtenerHistorialPorId(@PathVariable int id) {
+        HistorialPedidosDTO historialPedido = historialPedidosService.obtenerHistorialPorId(id);
+        return ResponseEntity.ok(historialPedido);
     }
 
     @PostMapping
-    public String create (@RequestBody Map<String, Object> historialPedido) {
-        return historialPedidosService.crearHistorialPedido(historialPedido);
-    }
-
-    @PostMapping("/updateHistorialPedido/{id}")
-    public String update (@PathVariable int id, @RequestBody Map<String, Object> historialPedido) {
-        return historialPedidosService.actualizarHistorialPedido(id, historialPedido);
+    public ResponseEntity<HistorialPedidosDTO> crearHistorialPedido(@RequestBody CrearHistorialPedidosDTO historialPedido) {
+        HistorialPedidosDTO historialPedidoCreado = historialPedidosService.crearHistorialPedido(historialPedido);
+        return new ResponseEntity<>(historialPedidoCreado, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/deleteHistorialPedido/{id}")
-    public String delete (@PathVariable int id) {
-        return historialPedidosService.eliminarHistorialPedido(id);
+    public ResponseEntity<Void> eliminarHistorialPedido(@PathVariable int id) {
+        historialPedidosService.eliminarHistorialPedido(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/countHistorialPedidos")
-    public int count() {
-        return historialPedidosService.contarHistorialPedidos();
+    public ResponseEntity<Integer> contarHistorialPedidos() {
+        int count = historialPedidosService.contarHistorialPedidos();
+        return ResponseEntity.ok(count);
     }
     
 }

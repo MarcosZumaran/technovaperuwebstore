@@ -27,8 +27,12 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
 public class LoteRestController {
 
+    private final LoteService loteService;
+
     @Autowired
-    private LoteService loteService;
+    public LoteRestController(LoteService loteService) {
+        this.loteService = loteService;
+    }
     
     @GetMapping("/{id}")
     public ResponseEntity<LoteDTO> obtenerLote(@PathVariable int id) {

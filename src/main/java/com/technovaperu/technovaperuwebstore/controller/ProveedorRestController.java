@@ -1,15 +1,19 @@
 package com.technovaperu.technovaperuwebstore.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.technovaperu.technovaperuwebstore.model.dto.base.ProveedorDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProveedorDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProveedorDTO;
 import com.technovaperu.technovaperuwebstore.services.ProveedorService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -18,37 +22,47 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 @RequestMapping("/proveedor")
 public class ProveedorRestController {
 
+    private final ProveedorService proveedorService;
+
     @Autowired
-    private ProveedorService proveedorService;
+    public ProveedorRestController(ProveedorService proveedorService) {
+        this.proveedorService = proveedorService;
+    }
 
     @GetMapping
-    public List<Map<String, Object>> getAll(){
-        return proveedorService.obtenerTodosLosProveedores();
+    public ResponseEntity<List<ProveedorDTO>> obtenerTodosLosProveedores(int pagina){
+        List<ProveedorDTO> proveedores = proveedorService.obtenerTodosLosProveedores(pagina);
+        return ResponseEntity.ok(proveedores);
     }
 
     @GetMapping("/getProveedor/{id}")
-    public Map<String, Object> getProveedor(@PathVariable int id){
-        return proveedorService.obtenerProveedorPorId(id);
+    public ResponseEntity<ProveedorDTO> obtenerProveedorPorId(@PathVariable int id){
+        ProveedorDTO proveedor = proveedorService.obtenerProveedorPorId(id);
+        return ResponseEntity.ok(proveedor);
     }
 
     @PostMapping
-    public String create(@RequestBody Map<String, Object> proveedor){
-        return proveedorService.crearProveedor(proveedor);
+    public ResponseEntity<ProveedorDTO> crearProveedor(@RequestBody CrearProveedorDTO proveedor){
+        ProveedorDTO proveedorCreado = proveedorService.crearProveedor(proveedor);
+        return new ResponseEntity<>(proveedorCreado, HttpStatus.CREATED);
     }
 
     @PostMapping("/updateProveedor/{id}")
-    public String update(@PathVariable int id, @RequestBody Map<String, Object> proveedor){
-        return proveedorService.actualizarProveedor(id, proveedor);
+    public ResponseEntity<Void> actualizarProveedor(@PathVariable int id, @RequestBody ActualizarProveedorDTO proveedor){
+        proveedorService.actualizarProveedor(id, proveedor);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/deleteProveedor/{id}")
-    public String delete(@PathVariable int id){
-        return proveedorService.eliminarProveedor(id);
+    public ResponseEntity<Void> eliminarProveedor(@PathVariable int id){
+        proveedorService.eliminarProveedor(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/countProveedores")
-    public int count(){
-        return proveedorService.contarProveedores();
+    public ResponseEntity<Integer> contarProveedores(){
+        int count = proveedorService.contarProveedores();
+        return ResponseEntity.ok(count);
     }
     
 }

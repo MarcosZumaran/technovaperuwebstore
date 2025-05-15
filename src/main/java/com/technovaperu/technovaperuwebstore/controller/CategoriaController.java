@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import com.technovaperu.technovaperuwebstore.model.dto.base.CategoriaDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearCategoriaDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarCategoriaDTO;
-import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.CategoriaService;
 
 import jakarta.validation.Valid;
@@ -26,44 +25,41 @@ public class CategoriaController {
         this.categoriaService = categoriaService;
     }
 
-
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CategoriaDTO>>> obtenerTodasLasCategorias() {
+    public ResponseEntity<List<CategoriaDTO>> obtenerTodasLasCategorias() {
         List<CategoriaDTO> categorias = categoriaService.obtenerTodasLasCategorias();
-        return ResponseEntity.ok(ApiResponse.success(categorias, "Categorías obtenidas con éxito"));
+        return ResponseEntity.ok(categorias);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoriaDTO>> obtenerCategoriaPorId(@PathVariable int id) {
+    public ResponseEntity<CategoriaDTO> obtenerCategoriaPorId(@PathVariable int id) {
         CategoriaDTO categoria = categoriaService.obtenerCategoriaPorId(id);
-        return ResponseEntity.ok(ApiResponse.success(categoria, "Categoría obtenida con éxito"));
+        return ResponseEntity.ok(categoria);
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CategoriaDTO>> crearCategoria(@Valid @RequestBody CrearCategoriaDTO categoriaDTO) {
-        CategoriaDTO nuevaCategoria = categoriaService.crearCategoria(categoriaDTO);
-        return new ResponseEntity<>(
-                ApiResponse.success(nuevaCategoria, "Categoría creada con éxito"),
-                HttpStatus.CREATED);
+    public ResponseEntity<CategoriaDTO> crearCategoria(@Valid @RequestBody CrearCategoriaDTO categoriaDTO) {
+        CategoriaDTO categoriaCreada = categoriaService.crearCategoria(categoriaDTO);
+        return new ResponseEntity<>(categoriaCreada, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CategoriaDTO>> actualizarCategoria(
+    public ResponseEntity<Void> actualizarCategoria(
             @PathVariable int id,
             @Valid @RequestBody ActualizarCategoriaDTO categoriaDTO) {
-        CategoriaDTO categoriaActualizada = categoriaService.actualizarCategoria(id, categoriaDTO);
-        return ResponseEntity.ok(ApiResponse.success(categoriaActualizada, "Categoría actualizada con éxito"));
+        categoriaService.actualizarCategoria(id, categoriaDTO);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> eliminarCategoria(@PathVariable int id) {
+    public ResponseEntity<Void> eliminarCategoria(@PathVariable int id) {
         categoriaService.eliminarCategoria(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Categoría eliminada con éxito"));
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Integer>> contarCategorias() {
+    public ResponseEntity<Integer> contarCategorias() {
         int count = categoriaService.contarCategorias();
-        return ResponseEntity.ok(ApiResponse.success(count, "Total de categorías obtenido con éxito"));
+        return ResponseEntity.ok(count);
     }
 }
