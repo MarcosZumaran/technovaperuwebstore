@@ -21,7 +21,7 @@ import com.technovaperu.technovaperuwebstore.services.ItemCarritoService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/itemCarrito")
+@RequestMapping("/api/item-carrito")
 public class ItemCarritoRestController {
 
     private final ItemCarritoService itemCarritoService;
@@ -61,7 +61,7 @@ public class ItemCarritoRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/countItemCarrito")
+    @GetMapping("/count")
     public ResponseEntity<Integer> contarItemsCarrito() {
         int count = itemCarritoService.contarItemsCarrito();
         return ResponseEntity.ok(count);

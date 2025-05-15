@@ -18,7 +18,7 @@ import com.technovaperu.technovaperuwebstore.services.FavoritosService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/favoritos")
+@RequestMapping("/api/favorito")
 public class FavoritosRestController {
 
     private final FavoritosService favoritosService;
@@ -52,7 +52,7 @@ public class FavoritosRestController {
         return ResponseEntity.noContent().build();
     }
     
-    @GetMapping("/countFavoritos")
+    @GetMapping("/count")
     public ResponseEntity<Integer> contarFavoritos() {
         int cantidad = favoritosService.contarFavoritos();
         return ResponseEntity.ok(cantidad);

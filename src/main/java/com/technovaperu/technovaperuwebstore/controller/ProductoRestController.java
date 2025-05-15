@@ -18,7 +18,7 @@ import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProducto
 import com.technovaperu.technovaperuwebstore.services.ProductoService;
 
 @RestController
-@RequestMapping("/producto")
+@RequestMapping("/api/producto")
 public class ProductoRestController {
 
     private final ProductoService productoService;
@@ -64,7 +64,7 @@ public class ProductoRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/countProductos")
+    @GetMapping("/count")
     public ResponseEntity<Integer> contarProductos(){
         int count = productoService.contarProductos();
         return ResponseEntity.ok(count);

@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/comentario")
+@RequestMapping("/api/comentario")
 public class ComentarioRestController {
     
     private final ComentarioService comentarioService;
@@ -65,7 +65,7 @@ public class ComentarioRestController {
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/countComentarios")
+    @GetMapping("/count")
     public ResponseEntity<Integer> contarComentarios() {
         int count = comentarioService.contarComentarios();
         return ResponseEntity.ok(count);

@@ -20,7 +20,7 @@ import com.technovaperu.technovaperuwebstore.services.PedidoService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/pedido")
+@RequestMapping("/api/pedido")
 public class PedidoRestController {
 
     private final PedidoService pedidoService;
@@ -66,7 +66,7 @@ public class PedidoRestController {
         return ResponseEntity.ok(cantidad);
     }
 
-    @GetMapping("/countPedidos")
+    @GetMapping("/count")
     public ResponseEntity<Integer> contarPedidos() {
         int cantidad = pedidoService.contarPedidos();
         return ResponseEntity.ok(cantidad);

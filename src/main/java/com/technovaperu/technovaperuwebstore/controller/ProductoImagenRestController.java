@@ -20,7 +20,7 @@ import com.technovaperu.technovaperuwebstore.services.ProductoImagenService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/productoImagen")
+@RequestMapping("/api/producto-imagen")
 public class ProductoImagenRestController {
     
     private final ProductoImagenService productoImagenService;
@@ -66,7 +66,7 @@ public class ProductoImagenRestController {
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/countImagenes")
+    @GetMapping("/count")
     public ResponseEntity<Integer> countImagenes() {
         int count = productoImagenService.contarImagenes();
         return ResponseEntity.ok(count);

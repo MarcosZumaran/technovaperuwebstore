@@ -23,7 +23,7 @@ import com.technovaperu.technovaperuwebstore.services.LoteService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/lotes")
+@RequestMapping("/api/lote")
 @CrossOrigin(origins = "*")
 public class LoteRestController {
 

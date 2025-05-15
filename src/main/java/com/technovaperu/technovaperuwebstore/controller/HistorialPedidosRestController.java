@@ -20,7 +20,7 @@ import com.technovaperu.technovaperuwebstore.services.HistorialPedidosService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/historialPedidos")
+@RequestMapping("/api/historial-pedido")
 public class HistorialPedidosRestController {
 
     private final HistorialPedidosService historialPedidosService;
@@ -54,7 +54,7 @@ public class HistorialPedidosRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/countHistorialPedidos")
+    @GetMapping("/count")
     public ResponseEntity<Integer> contarHistorialPedidos() {
         int count = historialPedidosService.contarHistorialPedidos();
         return ResponseEntity.ok(count);

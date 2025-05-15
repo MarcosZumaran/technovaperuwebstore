@@ -15,7 +15,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/unidades-medida")
+@RequestMapping("/api/unidad-medida")
 @CrossOrigin(origins = "*")
 public class UnidadMedidaController {
 

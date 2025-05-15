@@ -19,7 +19,7 @@ import com.technovaperu.technovaperuwebstore.services.ProveedorService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/proveedor")
+@RequestMapping("/api/proveedor")
 public class ProveedorRestController {
 
     private final ProveedorService proveedorService;
@@ -59,7 +59,7 @@ public class ProveedorRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/countProveedores")
+    @GetMapping("/count")
     public ResponseEntity<Integer> contarProveedores(){
         int count = proveedorService.contarProveedores();
         return ResponseEntity.ok(count);

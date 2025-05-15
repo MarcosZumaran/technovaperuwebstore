@@ -21,7 +21,7 @@ import com.technovaperu.technovaperuwebstore.services.UsuarioService;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @RestController
-@RequestMapping("/usuario")
+@RequestMapping("/api/usuario")
 public class UsuarioRestController {
 
     private UsuarioService usuarioService;
@@ -62,7 +62,7 @@ public class UsuarioRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/countUsuarios")
+    @GetMapping("/count")
     public ResponseEntity<Integer> contarUsuarios(){
         int cantidad = usuarioService.contarUsuarios();
         return ResponseEntity.ok(cantidad);

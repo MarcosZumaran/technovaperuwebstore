@@ -19,7 +19,7 @@ import com.technovaperu.technovaperuwebstore.services.CarritoService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/carritos")
+@RequestMapping("/api/carrito")
 @CrossOrigin(origins = "*")
 public class CarritoRestController {
 
