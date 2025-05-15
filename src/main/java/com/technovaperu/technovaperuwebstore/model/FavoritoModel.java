@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class FavoritosModel {
+public class FavoritoModel {
     /**
      * Identificador unico del registro en la base de datos.
      */
@@ -62,7 +62,7 @@ public class FavoritosModel {
      */
     private LocalDateTime fecha_agregado;
 
-    public FavoritosModel(UsuarioModel usuario, ProductoModel producto) {
+    public FavoritoModel(UsuarioModel usuario, ProductoModel producto) {
         this.usuario = usuario;
         this.producto = producto;
     }

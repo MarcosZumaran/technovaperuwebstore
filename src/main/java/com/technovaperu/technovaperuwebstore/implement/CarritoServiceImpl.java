@@ -23,7 +23,6 @@ import com.technovaperu.technovaperuwebstore.services.CarritoService;
 
 @Service
 public class CarritoServiceImpl implements CarritoService {
-
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -34,7 +33,12 @@ public class CarritoServiceImpl implements CarritoService {
             .fechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime())
             .build();
 
-
+    /**
+     * Obtiene un carrito por su ID
+     * @param id ID del carrito a buscar
+     * @return CarritoDTO con la información del carrito
+     * @throws RecursoNoEncontradoException si no existe un carrito con ese ID
+     */
     @Override
     public CarritoDTO obtenerCarritoPorId(int id) {
         String sql = "SELECT * FROM carrito WHERE id = ?";
@@ -45,6 +49,12 @@ public class CarritoServiceImpl implements CarritoService {
         }
     }
 
+    /**
+     * Obtiene un carrito por su usuario
+     * @param idUsuario ID del usuario a buscar
+     * @return CarritoDTO con la información del carrito
+     * @throws RecursoNoEncontradoException si no existe un carrito para ese usuario
+     */
     @Override
     public CarritoDTO obtenerCarritoPorUsuario(int idUsuario) {
         String sql = "SELECT * FROM carrito WHERE id_usuario = ?";
@@ -55,6 +65,12 @@ public class CarritoServiceImpl implements CarritoService {
         }
     }
 
+    /**
+     * Crea un nuevo carrito
+     * @param carrito datos del carrito a crear
+     * @return ID del carrito creado
+     * @throws RecursoDuplicadoException si el usuario ya tiene un carrito
+     */
     @Override
     @Transactional
     public int crearCarrito(CrearCarritoDTO carrito) {
@@ -86,6 +102,10 @@ public class CarritoServiceImpl implements CarritoService {
         return key.intValue();
     }
 
+    /**
+     * Cuenta el número total de carritos
+     * @return Cantidad de carritos existentes
+     */
     @Override
     public int contarCarritos() {
         String sql = "SELECT COUNT(id) FROM carrito";
@@ -93,6 +113,11 @@ public class CarritoServiceImpl implements CarritoService {
         return (count != null) ? count : 0;
     }
 
+    /**
+     * Verifica si existe un carrito para un usuario específico
+     * @param idUsuario ID del usuario a verificar
+     * @return true si existe un carrito para ese usuario, false en caso contrario
+     */
     @Override
     public boolean existeCarritoParaUsuario(int idUsuario) {
         String sql = "SELECT COUNT(id) FROM carrito WHERE id_usuario = ?";
@@ -100,6 +125,11 @@ public class CarritoServiceImpl implements CarritoService {
         return (count != null && count > 0);
     }
 
+    /**
+     * Elimina un carrito por su ID
+     * @param id ID del carrito a eliminar
+     * @throws RecursoNoEncontradoException si no existe un carrito con ese ID
+     */
     @Override
     @Transactional
     public void eliminarCarrito(int id) {

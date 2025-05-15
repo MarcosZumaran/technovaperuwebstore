@@ -1,9 +1,11 @@
 package com.technovaperu.technovaperuwebstore.model.dto.create;
 
-import com.technovaperu.technovaperuwebstore.model.HistorialPedidosModel.EstadoHistorialPedidos;
+import com.technovaperu.technovaperuwebstore.model.HistorialPedidoModel.EstadoHistorialPedido;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,9 +17,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CrearHistorialPedidosDTO {
 
-    @NotBlank(message = "El id de pedido no puede estar vacío")
-    @Min(value = 1, message = "El id de pedido debe ser mayor que 0")
+    @NotNull(message = "El id de pedido no puede estar vacío")
+    @Positive(message = "El id de pedido debe ser mayor que 0")
+    @Schema(description = "ID del pedido al que pertenece el historial", example = "1")
     private int idPedido;
 
-    private EstadoHistorialPedidos estado;
+    @Schema(description = "Estado del historial del pedido", example = "PENDIENTE")
+    private EstadoHistorialPedido estado;
+
 }

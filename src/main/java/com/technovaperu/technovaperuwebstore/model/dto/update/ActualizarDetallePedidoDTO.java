@@ -1,4 +1,4 @@
-package com.technovaperu.technovaperuwebstore.model.dto.create;
+package com.technovaperu.technovaperuwebstore.model.dto.update;
 
 import java.math.BigDecimal;
 
@@ -11,11 +11,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class CrearDetallePedidoDTO {
-
+public class ActualizarDetallePedidoDTO {
     @NotNull(message = "El id de pedido no puede estar vacío")
     @Positive(message = "El id de pedido debe ser mayor que 0")
     @Schema(description = "ID del pedido al que pertenece el detalle", example = "1")

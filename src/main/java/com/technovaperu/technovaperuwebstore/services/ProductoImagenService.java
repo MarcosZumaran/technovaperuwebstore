@@ -1,16 +1,19 @@
 package com.technovaperu.technovaperuwebstore.services;
 
 import java.util.List;
-import java.util.Map;
+
+import com.technovaperu.technovaperuwebstore.model.dto.base.ProductoImagenDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProductoImagenDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProductoImagenDTO;
 
 public interface ProductoImagenService {
 
-    List<Map<String, Object>> obtenerImagenesPorProducto(int id);
-    Map<String, Object> obtenerImagenPorId(int id);
-    String crearImagen(Map<String, Object> imagen);
-    String actualizarImagen(int id, Map<String, Object> imagen);
-    String eliminarImagen(int id);
+    List<ProductoImagenDTO> obtenerImagenesPorProducto(int id);
+    ProductoImagenDTO obtenerImagenPorId(int id);
+    ProductoImagenDTO crearImagen(CrearProductoImagenDTO imagen);
+    void actualizarImagen(int id, ActualizarProductoImagenDTO imagen);
+    void eliminarImagen(int id);
     int contarImagenesPorProducto(int id);
     int contarImagenes();
-    
+    boolean existeImagenPorId(int id);
 }

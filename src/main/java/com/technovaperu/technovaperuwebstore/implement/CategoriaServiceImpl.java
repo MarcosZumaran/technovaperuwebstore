@@ -32,11 +32,19 @@ public class CategoriaServiceImpl implements CategoriaService {
             .descripcion(rs.getString("descripcion"))
             .build();
 
+    /**
+     * Constructor de la clase que inyecta la dependencia de JdbcTemplate.
+     * @param jdbcTemplate Instancia de JdbcTemplate para interactuar con la base de datos.
+     */
     @Autowired
     public CategoriaServiceImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Obtiene todas las categorías de la base de datos.
+     * @return Una lista de instancias de CategoriaDTO con los datos de las categorías.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<CategoriaDTO> obtenerTodasLasCategorias() {
@@ -44,6 +52,12 @@ public class CategoriaServiceImpl implements CategoriaService {
         return jdbcTemplate.query(sql, categoriaMapper);
     }
 
+    /**
+     * Obtiene una categoría por su identificador.
+     * @param id Identificador de la categoría.
+     * @return Una instancia de CategoriaDTO con los datos de la categoría.
+     * @throws RecursoNoEncontradoException Si la categoría no existe.
+     */
     @Override
     @Transactional(readOnly = true)
     public CategoriaDTO obtenerCategoriaPorId(int id) {
@@ -55,6 +69,11 @@ public class CategoriaServiceImpl implements CategoriaService {
         }
     }
 
+    /**
+     * Crea una categoría en la base de datos.
+     * @param categoria Instancia de CrearCategoriaDTO con los datos de la categoría.
+     * @return Una instancia de CategoriaDTO con los datos de la categoría creada.
+     */
     @Override
     @Transactional
     public CategoriaDTO crearCategoria(CrearCategoriaDTO categoria) {
@@ -77,34 +96,42 @@ public class CategoriaServiceImpl implements CategoriaService {
                 .build();
     }
 
+    /**
+     * Actualiza una categoría en la base de datos.
+     * @param id Identificador de la categoría.
+     * @param categoria Instancia de ActualizarCategoriaDTO con los datos de la categoría.
+     * @throws RecursoNoEncontradoException Si la categoría no existe.
+     */
     @Override
     @Transactional
-    public CategoriaDTO actualizarCategoria(int id, ActualizarCategoriaDTO categoria) {
+    public void actualizarCategoria(int id, ActualizarCategoriaDTO categoria) {
         if (!existeCategoriaPorId(id)) {
             throw new RecursoNoEncontradoException("Categoría", "id", id);
         }
         
         String sql = "UPDATE categoria SET nombre = ?, descripcion = ? WHERE id = ?";
         jdbcTemplate.update(sql, categoria.getNombre(), categoria.getDescripcion(), id);
-        
-        return CategoriaDTO.builder()
-                .id(id)
-                .nombre(categoria.getNombre())
-                .descripcion(categoria.getDescripcion())
-                .build();
     }
 
+    /**
+     * Elimina una categoría de la base de datos.
+     * @param id Identificador de la categoría.
+     * @throws RecursoNoEncontradoException Si la categoría no existe.
+     */
     @Override
     @Transactional
     public void eliminarCategoria(int id) {
         if (!existeCategoriaPorId(id)) {
             throw new RecursoNoEncontradoException("Categoría", "id", id);
         }
-        
         String sql = "DELETE FROM categoria WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
+    /**
+     * Obtiene el número de categorías en la base de datos.
+     * @return El número de categorías.
+     */
     @Override
     @Transactional(readOnly = true)
     public int contarCategorias() {
@@ -113,6 +140,11 @@ public class CategoriaServiceImpl implements CategoriaService {
         return (count != null) ? count : 0;
     }
     
+    /**
+     * Verifica si una categoría existe en la base de datos.
+     * @param id Identificador de la categoría.
+     * @return true si la categoría existe, false en caso contrario.
+     */
     @Override
     @Transactional(readOnly = true)
     public boolean existeCategoriaPorId(int id) {

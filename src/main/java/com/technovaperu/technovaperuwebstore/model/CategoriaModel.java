@@ -8,7 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "categoria")
+@Table(name = "categorias")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -53,7 +53,7 @@ public class CategoriaModel {
     }
 
     // Relación ManyToMany con ProductoModel
-    @ManyToMany(mappedBy = "categorias")
+    @OneToMany(mappedBy = "categorias")
     private Set<ProductoModel> productos = new HashSet<>(); // Relación con productos
 
     /**

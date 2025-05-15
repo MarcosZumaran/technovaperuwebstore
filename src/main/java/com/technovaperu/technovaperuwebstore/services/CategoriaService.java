@@ -10,7 +10,7 @@ public interface CategoriaService {
     List<CategoriaDTO> obtenerTodasLasCategorias();
     CategoriaDTO obtenerCategoriaPorId(int id);
     CategoriaDTO crearCategoria(CrearCategoriaDTO categoria);
-    CategoriaDTO actualizarCategoria(int id, ActualizarCategoriaDTO categoria);
+    void actualizarCategoria(int id, ActualizarCategoriaDTO categoria);
     void eliminarCategoria(int id);
     int contarCategorias();
     boolean existeCategoriaPorId(int id);

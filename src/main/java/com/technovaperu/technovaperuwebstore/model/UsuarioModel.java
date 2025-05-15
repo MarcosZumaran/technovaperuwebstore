@@ -13,7 +13,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
@@ -26,7 +25,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuarios")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -101,14 +100,6 @@ public class UsuarioModel {
     private Rol rol = Rol.CLIENTE;
 
     /**
-     * Ssi esta o no activo el usuario
-     * 
-     * @param activo
-     */
-    @Column(name = "activo", nullable = false)
-    private boolean activo;
-
-    /**
      * Fecha de creación del usuario.
      * Este campo es asignado automáticamente al persistir el objeto.
      */
@@ -148,10 +139,10 @@ public class UsuarioModel {
      * Relación uno a muchos entre usuario y favoritos.
      */
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<FavoritosModel> favoritos = new ArrayList<>();
+    private List<FavoritoModel> favoritos = new ArrayList<>();
 
     public UsuarioModel(String nombre, String apellido, String email, String password, String direccion,
-            String telefono, Rol rol, boolean activo) {
+            String telefono, Rol rol) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
@@ -159,7 +150,6 @@ public class UsuarioModel {
         this.direccion = direccion;
         this.telefono = telefono;
         this.rol = rol;
-        this.activo = activo;
     }
 
     /**
@@ -185,7 +175,17 @@ public class UsuarioModel {
 
     // Enumeraciones
     public enum Rol {
-        ADMIN,
-        CLIENTE
+        ADMIN("ADMIN"),
+        CLIENTE("CLIENTE");
+
+        private final String value;
+
+        Rol(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

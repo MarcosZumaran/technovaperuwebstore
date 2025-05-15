@@ -32,6 +32,11 @@ public class ProductoDTO {
     @Schema(description = "ID del proveedor del producto", example = "1")
     private int idProveedor;
 
+    @NotNull(message = "El id de categoria no puede ser nulo")
+    @Positive(message = "El id de categoria debe ser mayor que 0")
+    @Schema(description = "ID de la categoria al que pertenece el producto", example = "1")
+    private int idCategoria;
+
     @NotBlank(message = "El nombre no puede estar vacío")
     @Size(max = 100, message = "El nombre no puede exceder 100 caracteres") 
     @Schema(description = "Nombre del producto", example = "Smartphone XYZ")
@@ -42,23 +47,10 @@ public class ProductoDTO {
     @Schema(description = "Descripción del producto", example = "Smartphone de última generación con 8GB RAM y 128GB almacenamiento")
     private String descripcion;
 
-    @NotNull(message = "El precio no puede ser nulo")
-    @PositiveOrZero(message = "El precio debe ser mayor o igual que 0")
-    @Schema(description = "Precio del producto", example = "599.99")
-    private BigDecimal precio;
-
-    @NotNull(message = "El descuento no puede ser nulo")
-    @PositiveOrZero(message = "El descuento debe ser mayor o igual que 0")
-    @Schema(description = "Descuento aplicado al producto", example = "50.00")
-    private BigDecimal descuento;
-
     @NotNull(message = "El stock no puede ser nulo")
     @PositiveOrZero(message = "El stock debe ser mayor o igual que 0")
     @Schema(description = "Cantidad disponible en inventario", example = "100")
     private int stock;
-
-    @Schema(description = "Indica si el producto está activo", example = "true")
-    private boolean activo;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Schema(description = "Fecha de registro del producto", example = "2023-01-01 10:00:00")

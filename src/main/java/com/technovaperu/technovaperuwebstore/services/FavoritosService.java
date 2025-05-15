@@ -1,13 +1,15 @@
 package com.technovaperu.technovaperuwebstore.services;
 
 import java.util.List;
-import java.util.Map;
+
+import com.technovaperu.technovaperuwebstore.model.dto.base.FavoritosDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearFavoritoDTO;
 
 public interface FavoritosService {
-    List<Map<String, Object>> obtenerFavoritosPorUsuario(int idUsuario, int pagina);
-    Map<String, Object> obtenerFavoritoPorId(int id);
-    String crearFavorito(Map<String, Object> favorito);
-    String actualizarFavorito(int id, Map<String, Object> favorito);
-    String eliminarFavorito(int id);
+    List<FavoritosDTO> obtenerFavoritosPorUsuario(int idUsuario, int pagina);
+    FavoritosDTO obtenerFavoritoPorId(int id);
+    FavoritosDTO crearFavorito(CrearFavoritoDTO favorito);
+    void eliminarFavorito(int id);
     int contarFavoritos();
+    boolean existeFavoritoPorId(int id);
 }

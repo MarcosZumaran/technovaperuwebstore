@@ -1,14 +1,17 @@
 package com.technovaperu.technovaperuwebstore.services;
 
 import java.util.List;
-import java.util.Map;
+
+import com.technovaperu.technovaperuwebstore.model.dto.base.UsuarioDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearUsuarioDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarUsuarioDTO;
 
 public interface UsuarioService {
-    List<Map<String, Object>> obtenerTodosLosUsuarios(int pagina);
-    Map<String, Object> obtenerUsuarioPorId(int id);
-    int obtenerCarritoDeUsuario(int idUsuario);
-    String crearUsuario(Map<String, Object> usuario);
-    String actualizarUsuario(int id, Map<String, Object> usuario);
-    String eliminarUsuario(int id);
+    List<UsuarioDTO> obtenerTodosLosUsuarios(int pagina);
+    UsuarioDTO obtenerUsuarioPorId(int id);
+    UsuarioDTO crearUsuario(CrearUsuarioDTO usuario);
+    void actualizarUsuario(int id, ActualizarUsuarioDTO usuario);
+    void eliminarUsuario(int id);
     int contarUsuarios();
+    boolean existeUsuarioPorId(int id);
 }

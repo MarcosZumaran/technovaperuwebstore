@@ -1,14 +1,18 @@
 package com.technovaperu.technovaperuwebstore.services;
 
 import java.util.List;
-import java.util.Map;
+
+import com.technovaperu.technovaperuwebstore.model.dto.base.PedidoDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearPedidoDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarPedidoDTO;
 
 public interface PedidoService {
-    List<Map<String, Object>> obtenerPedidosPorUsuario(int idUsuario, int pagina);
-    Map<String, Object> obtenerPedidoPorId(int id);
-    String crearPedido(Map<String, Object> pedido);
-    String actualizarPedido(int id, Map<String, Object> pedido);
-    String eliminarPedido(int id);
+    List<PedidoDTO> obtenerPedidosPorUsuario(int idUsuario, int pagina);
+    PedidoDTO obtenerPedidoPorId(int id);
+    PedidoDTO crearPedido(CrearPedidoDTO pedido);
+    void actualizarPedido(int id, ActualizarPedidoDTO pedido);
+    void eliminarPedido(int id);
     int contarPedidosPorUsuario(int idUsuario);
     int contarPedidos();
+    boolean existePedidoPorId(int id);
 }

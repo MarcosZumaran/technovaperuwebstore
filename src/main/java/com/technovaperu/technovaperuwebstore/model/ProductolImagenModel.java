@@ -16,7 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "producto_imagen")
+@Table(name = "producto_imagenes")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -70,12 +70,22 @@ public class ProductolImagenModel {
         /**
          * Imagen de portada del producto.
          */
-        PORTADA,
+        PORTADA("PORTADA"),
 
         /**
          * Imagen de la galeria del producto.
          */
-        GALERIA
+        GALERIA("GALERIA");
+
+        private final String value;
+
+        Tipo(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 
 }

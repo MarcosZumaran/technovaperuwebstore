@@ -41,6 +41,11 @@ public class UsuarioDTO {
     @Schema(description = "Correo electrónico del usuario", example = "juan.perez@ejemplo.com")
     private String email;
 
+    @NotBlank(message = "La contraseña no puede estar vacía")
+    @Size(max = 255, message = "La contraseña no puede exceder 255 caracteres")
+    @Schema(description = "Contraseña del usuario", example = "123456")
+    private String password;
+
     @NotBlank(message = "La dirección no puede estar vacía")
     @Size(max = 255, message = "La dirección no puede exceder 255 caracteres")
     @Schema(description = "Dirección del usuario", example = "Av. Principal 123")
@@ -54,9 +59,6 @@ public class UsuarioDTO {
 
     @Schema(description = "Rol del usuario en el sistema", example = "CLIENTE")
     private Rol rol;
-
-    @Schema(description = "Indica si el usuario está activo", example = "true")
-    private boolean activo;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Schema(description = "Fecha de registro del usuario", example = "2023-01-01 10:00:00")

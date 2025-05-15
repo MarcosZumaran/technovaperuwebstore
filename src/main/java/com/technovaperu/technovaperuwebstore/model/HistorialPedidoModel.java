@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class HistorialPedidosModel {
+public class HistorialPedidoModel {
     /**
      * Identificador unico del historial de pedidos.
      */
@@ -44,7 +44,7 @@ public class HistorialPedidosModel {
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private EstadoHistorialPedidos estado;
+    private EstadoHistorialPedido estado;
 
     /**
      * Fecha y hora en que se cambia el estado del pedido.
@@ -52,7 +52,7 @@ public class HistorialPedidosModel {
     @Column(name = "fecha_estado", nullable = false)
     private LocalDateTime fecha_estado;
 
-    public HistorialPedidosModel(PedidoModel pedido, EstadoHistorialPedidos estado) {
+    public HistorialPedidoModel(PedidoModel pedido, EstadoHistorialPedido estado) {
         this.pedido = pedido;
         this.estado = estado;
     }
@@ -76,25 +76,35 @@ public class HistorialPedidosModel {
      * <li>{@link #CANCELADO}: El pedido ha sido cancelado.</li>
      * </ul>
      */
-    public enum EstadoHistorialPedidos {
+    public enum EstadoHistorialPedido {
         /**
          * El pedido est  pendiente de ser preparado.
          */
-        PENDIENTE,
+        PENDIENTE("PENDIENTE"),
 
         /**
          * El pedido ha sido enviado al cliente.
          */
-        ENVIADO,
+        ENVIADO("ENVIADO"),
 
         /**
          * El pedido ha sido entregado al cliente.
          */
-        ENTREGADO,
+        ENTREGADO("ENTREGADO"),
 
         /**
          * El pedido ha sido cancelado.
          */
-        CANCELADO
+        CANCELADO("CANCELADO");
+
+        private final String value;
+
+        EstadoHistorialPedido(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

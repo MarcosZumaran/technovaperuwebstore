@@ -1,12 +1,14 @@
 package com.technovaperu.technovaperuwebstore.services;
 
 import java.util.List;
-import java.util.Map;
+
+import com.technovaperu.technovaperuwebstore.model.dto.base.HistorialPedidosDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.create.CrearHistorialPedidosDTO;
 public interface HistorialPedidosService {
-    List<Map<String, Object>> obtenerHistorialPorPedido(int idPedido, int pagina);
-    Map<String, Object> obtenerHistorialPorId(int id);
-    String crearHistorialPedido(Map<String, Object> historial);
-    String actualizarHistorialPedido(int id, Map<String, Object> historial);
-    String eliminarHistorialPedido(int id);
+    List<HistorialPedidosDTO> obtenerHistorialPorPedido(int idPedido, int pagina);
+    HistorialPedidosDTO obtenerHistorialPorId(int id);
+    HistorialPedidosDTO crearHistorialPedido(CrearHistorialPedidosDTO historial);
+    void eliminarHistorialPedido(int id);
     int contarHistorialPedidos();
+    boolean existeHistorialPedidoPorId(int id);
 }

@@ -1,11 +1,9 @@
 package com.technovaperu.technovaperuwebstore.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -15,8 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
@@ -28,7 +24,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "producto")
+@Table(name = "productos")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -52,6 +48,13 @@ public class ProductoModel {
     private ProveedorModel proveedor;
 
     /**
+     * Las categorías que se relacionan con el producto.
+     */
+    @ManyToOne
+    @JoinColumn(name = "id_categoria", nullable = false)
+    private CategoriaModel categorias;
+
+    /**
      * El nombre del producto.
      */
     @Column(name = "nombre", nullable = false, length = 100)
@@ -63,32 +66,11 @@ public class ProductoModel {
      */
     @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
-
-    /**
-     * El precio del producto, con una precisión de 2 decimales.
-     */
-    @Column(name = "precio", nullable = false, precision = 10, scale = 2)
-    private BigDecimal precio;
-
-    /**
-     * El descuento aplicado al producto, con una precisión de 2 decimales.
-     * Por defecto es 0%.
-     */
-    @Column(name = "descuento", nullable = false, precision = 5, scale = 2)
-    private BigDecimal descuento = BigDecimal.ZERO; 
-
     /**
      * La cantidad de stock disponible del producto.
      */
     @Column(name = "stock", nullable = false)
     private int stock;
-
-    /**
-     * El estado activo del producto, que determina si el producto se muestra o no
-     * en la tienda. Por defecto es true.
-     */
-    @Column(name = "activo", nullable = false)
-    private boolean activo = true; 
 
     /**
      * La fecha de registro del producto, que no se puede actualizar.
@@ -110,17 +92,6 @@ public class ProductoModel {
     private List<ProductolImagenModel> imagenes = new ArrayList<>();
 
     /**
-     * Las categorías que se relacionan con el producto.
-     */
-    @ManyToMany
-    @JoinTable(
-        name = "producto_categoria", // Nombre de la tabla intermedia
-        joinColumns = @JoinColumn(name = "id_producto"),
-        inverseJoinColumns = @JoinColumn(name = "id_categoria")
-    )
-    private Set<CategoriaModel> categorias = new HashSet<>();
-
-    /**
      * Los items del carrito que se relacionan con el producto.
      */
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -136,7 +107,7 @@ public class ProductoModel {
      * Los favoritos que se relacionan con el producto.
      */
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FavoritosModel> favoritos = new ArrayList<>();
+    private List<FavoritoModel> favoritos = new ArrayList<>();
 
     /**
      * Los detalles de pedidos que se relacionan con el producto.
@@ -144,15 +115,19 @@ public class ProductoModel {
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DetallePedidoModel> detalles = new ArrayList<>();
 
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LoteModel> lotes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UnidadMedidaModel> unidades = new ArrayList<>();
+
     // Constructor personalizado
-    public ProductoModel(String nombre, String descripcion, BigDecimal precio, BigDecimal descuento, int stock, CategoriaModel categoria) {
+    public ProductoModel(ProveedorModel proveedor, CategoriaModel categorias, String nombre, String descripcion, int stock) {
+        this.proveedor = proveedor;
+        this.categorias = categorias;
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.precio = precio;
-        this.descuento = descuento;
         this.stock = stock;
-        this.categorias.add(categoria); // Asocia un producto con al menos una categoría
-        this.activo = true;
     }
 
     /**

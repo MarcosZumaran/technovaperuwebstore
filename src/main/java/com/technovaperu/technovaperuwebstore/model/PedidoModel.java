@@ -25,7 +25,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "pedido")
+@Table(name = "pedidos")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -99,7 +99,7 @@ public class PedidoModel {
      * El nombre de la columna en la base de datos es 'id_pedido'.
      */
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<HistorialPedidosModel> historiales = new ArrayList<>();
+    private List<HistorialPedidoModel> historiales = new ArrayList<>();
 
     public PedidoModel(UsuarioModel cliente, EstadoPedido estado, BigDecimal total, String direccion_envio) {
         this.cliente = cliente;
