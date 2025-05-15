@@ -51,7 +51,7 @@ public class FavoritosServiceImpl implements FavoritosService{
         if (pagina <= 0) pagina = 1;
         int offset = (pagina - 1) * 10;
         int limit = 10;
-        String sql = "SELECT * FROM favoritos WHERE id_usuario = ? ORDER BY fecha_agregado DESC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM favorito WHERE id_usuario = ? ORDER BY fecha_agregado DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.query(sql, favoritosRowMapper, idUsuario, limit, offset);
     }
 
@@ -64,7 +64,7 @@ public class FavoritosServiceImpl implements FavoritosService{
     @Transactional(readOnly = true)
     public FavoritosDTO obtenerFavoritoPorId(int id){
         try {
-            String sql = "SELECT * FROM favoritos WHERE id = ?";
+            String sql = "SELECT * FROM favorito WHERE id = ?";
             return jdbcTemplate.queryForObject(sql, favoritosRowMapper, id);
         } catch (EmptyResultDataAccessException e) {
             throw new RecursoNoEncontradoException("Favorito", "id", id);
@@ -79,7 +79,7 @@ public class FavoritosServiceImpl implements FavoritosService{
     @Override
     @Transactional
     public FavoritosDTO crearFavorito(CrearFavoritoDTO favorito){
-        String sql = "INSERT INTO favoritos (id_usuario, id_producto) VALUES(?, ?)";
+        String sql = "INSERT INTO favorito (id_usuario, id_producto) VALUES(?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -113,7 +113,7 @@ public class FavoritosServiceImpl implements FavoritosService{
         if (!existeFavoritoPorId(id)) {
             throw new RecursoNoEncontradoException("Favorito", "id", id);
         }
-        String sql = "DELETE FROM favoritos WHERE id = ?";
+        String sql = "DELETE FROM favorito WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
@@ -124,7 +124,7 @@ public class FavoritosServiceImpl implements FavoritosService{
     @Override
     @Transactional(readOnly = true)
     public int contarFavoritos(){
-        String sql = "SELECT COUNT(id) FROM favoritos";
+        String sql = "SELECT COUNT(id) FROM favorito";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return (count != null) ? count : 0;
     }
@@ -137,7 +137,7 @@ public class FavoritosServiceImpl implements FavoritosService{
     @Override
     @Transactional(readOnly = true)
     public boolean existeFavoritoPorId(int id) {
-        String sql = "SELECT COUNT(id) FROM favoritos WHERE id = ?";
+        String sql = "SELECT COUNT(id) FROM favorito WHERE id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }

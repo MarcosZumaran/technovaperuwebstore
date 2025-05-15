@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.HistorialPedidoModel.EstadoHistorialPedido;
-import com.technovaperu.technovaperuwebstore.model.PedidoModel.EstadoPedido;
 import com.technovaperu.technovaperuwebstore.model.dto.base.HistorialPedidosDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearHistorialPedidosDTO;
 import com.technovaperu.technovaperuwebstore.services.HistorialPedidosService;
@@ -55,7 +53,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
         if (pagina <= 0) pagina = 1; // Ajusta la página si es menor o igual a 0
         int offset = (pagina - 1) * 10;
         int limit = 10;
-        String sql = "SELECT * FROM historial_pedidos WHERE id_pedido = ? ORDER BY fecha_estado DESC LIMIT ? OFFSET ?";
+        String sql = "SELECT * FROM historial_pedido WHERE id_pedido = ? ORDER BY fecha_estado DESC LIMIT ? OFFSET ?";
         return jdbcTemplate.query(sql, historialPedidosRowMapper, idPedido, limit, offset);
     }
 
@@ -70,7 +68,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
     @Transactional(readOnly = true)
     public HistorialPedidosDTO obtenerHistorialPorId(int id){
         try {
-            String sql = "SELECT * FROM historial_pedidos WHERE id = ?";
+            String sql = "SELECT * FROM historial_pedido WHERE id = ?";
             return jdbcTemplate.queryForObject(sql, historialPedidosRowMapper, id);
         } catch (EmptyResultDataAccessException e) {
             throw new RecursoNoEncontradoException("Historial de Pedido", "id", id);
@@ -86,7 +84,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
     @Override
     @Transactional
     public HistorialPedidosDTO crearHistorialPedido(CrearHistorialPedidosDTO historial){
-        String sql = "INSERT INTO historial_pedidos (id_pedido, estado, fecha_estado) VALUES(?, ?, NOW())";
+        String sql = "INSERT INTO historial_pedido (id_pedido, estado, fecha_estado) VALUES(?, ?, NOW())";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
@@ -123,7 +121,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
         if (!existeHistorialPedidoPorId(id)) {
             throw new RecursoNoEncontradoException("Historial de Pedido", "id", id);
         }
-        String sql = "DELETE FROM historial_pedidos WHERE id = ?";
+        String sql = "DELETE FROM historial_pedido WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
@@ -135,7 +133,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
     @Override
     @Transactional(readOnly = true)
     public int contarHistorialPedidos(){
-        String sql = "SELECT COUNT(id) FROM historial_pedidos";
+        String sql = "SELECT COUNT(id) FROM historial_pedido";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return (count != null) ? count : 0;
     }
@@ -149,7 +147,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
     @Override
     @Transactional(readOnly = true)
     public boolean existeHistorialPedidoPorId(int id) {
-        String sql = "SELECT COUNT(id) FROM historial_pedidos WHERE id = ?";
+        String sql = "SELECT COUNT(id) FROM historial_pedido WHERE id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
