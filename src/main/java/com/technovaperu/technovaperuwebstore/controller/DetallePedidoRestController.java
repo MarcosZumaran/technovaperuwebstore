@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technovaperu.technovaperuwebstore.model.dto.base.DetallePedidoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearDetallePedidoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarDetallePedidoDTO;
+import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.DetallePedidoService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -30,40 +32,43 @@ public class DetallePedidoRestController {
         this.detallePedidoService = detallePedidoService;
     }
 
-    @GetMapping("/getDetallePedidoByPedido/{id}")
-    public ResponseEntity<List<DetallePedidoDTO>> obtenerDetallesPedidoPorPedido (int id) {
+    @GetMapping("/pedido/{id}")
+    public ResponseEntity<ApiResponse<List<DetallePedidoDTO>>> obtenerDetallesPedidoPorPedido (int id) {
         List<DetallePedidoDTO> detallesPedido = detallePedidoService.obtenerDetallesPedidoPorPedido(id, 1);
-        return ResponseEntity.ok(detallesPedido);
+        return ResponseEntity.ok(ApiResponse.success(detallesPedido, "Detalles pedido obtenidos con éxito"));
     }
 
-    @GetMapping("/getDetallePedido/{id}")
-    public ResponseEntity<DetallePedidoDTO> obtenerDetallePedidoPorId(int id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<DetallePedidoDTO>> obtenerDetallePedidoPorId(int id) {
         DetallePedidoDTO detallePedido = detallePedidoService.obtenerDetallePedidoPorId(id);
-        return ResponseEntity.ok(detallePedido);
+        return ResponseEntity.ok(ApiResponse.success(detallePedido, "Detalle pedido obtenido con éxito"));
     }
 
     @PostMapping
-    public ResponseEntity<DetallePedidoDTO> crearDetallePedido(@RequestBody CrearDetallePedidoDTO detallePedido) {
+    public ResponseEntity<ApiResponse<DetallePedidoDTO>> crearDetallePedido(@RequestBody CrearDetallePedidoDTO detallePedido) {
         DetallePedidoDTO detallePedidoCreado = detallePedidoService.crearDetallePedido(detallePedido);
-        return new ResponseEntity<>(detallePedidoCreado, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+            ApiResponse.success(detallePedidoCreado, "Detalle pedido creado con éxito"),
+            HttpStatus.CREATED
+        );
     }
 
-    @PostMapping("/updateDetallePedido/{id}")
-    public ResponseEntity<Void> actualizarDetallePedido(@PathVariable int id, @RequestBody ActualizarDetallePedidoDTO detallePedido) {
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> actualizarDetallePedido(@PathVariable int id, @RequestBody ActualizarDetallePedidoDTO detallePedido) {
         detallePedidoService.actualizarDetallePedido(id, detallePedido);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Detalle pedido actualizado con éxito"));
     }
 
-    @DeleteMapping("/deleteDetallePedido/{id}")
-    public ResponseEntity<Void> eliminarDetallePedido(@PathVariable int id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> eliminarDetallePedido(@PathVariable int id) {
         detallePedidoService.eliminarDetallePedido(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Detalle pedido eliminado con éxito"));
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Integer> contarDetallesPedido() {
+    public ResponseEntity<ApiResponse<Integer>> contarDetallesPedido() {
         int count = detallePedidoService.contarDetallesPedido();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(ApiResponse.success(count, "Total de detalles pedido obtenido con éxito"));
     }
     
 }

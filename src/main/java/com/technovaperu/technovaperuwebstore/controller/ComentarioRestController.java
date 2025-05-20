@@ -5,14 +5,17 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technovaperu.technovaperuwebstore.model.dto.base.ComentarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearComentarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarComentarioDTO;
+import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.ComentarioService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -29,46 +32,49 @@ public class ComentarioRestController {
         this.comentarioService = comentarioService;
     }
 
-    @GetMapping("/getComentariosByProduct/{id}")
-    public ResponseEntity<List<ComentarioDTO>> obtenerComentariosPorProducto(int id) {
+    @GetMapping("/producto/{id}")
+    public ResponseEntity<ApiResponse<List<ComentarioDTO>>> obtenerComentariosPorProducto(int id) {
         List<ComentarioDTO> comentarios = comentarioService.obtenerComentariosPorProducto(id, 1);
-        return ResponseEntity.ok(comentarios);
+        return ResponseEntity.ok(ApiResponse.success(comentarios, "Comentarios obtenidos con éxito"));
     }
 
-    @GetMapping("/getComentario/{id}")
-    public ResponseEntity<ComentarioDTO> obtenerComentarioPorId(int id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ComentarioDTO>> obtenerComentarioPorId(int id) {
         ComentarioDTO comentario = comentarioService.obtenerComentarioPorId(id);
-        return ResponseEntity.ok(comentario);
+        return ResponseEntity.ok(ApiResponse.success(comentario, "Comentario obtenido con éxito"));
     }
 
     @PostMapping
-    public ResponseEntity<ComentarioDTO> crearComentario(@Valid @RequestBody CrearComentarioDTO comentario) {
+    public ResponseEntity<ApiResponse<ComentarioDTO>> crearComentario(@Valid @RequestBody CrearComentarioDTO comentario) {
         ComentarioDTO comentarioCreado = comentarioService.crearComentario(comentario);
-        return new ResponseEntity<>(comentarioCreado, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+            ApiResponse.success(comentarioCreado, "Comentario creado con éxito"),
+            HttpStatus.CREATED
+        );
     }
 
-    @PostMapping("/updateComentario/{id}")
-    public ResponseEntity<Void> actualizarComentario(int id, @RequestBody ActualizarComentarioDTO comentario) {
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> actualizarComentario(int id, @RequestBody ActualizarComentarioDTO comentario) {
         comentarioService.actualizarComentario(id, comentario);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Comentario actualizado con éxito"));
     }
 
-    @GetMapping("/deleteComentario/{id}")
-    public ResponseEntity<Void> eliminarComentario(int id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> eliminarComentario(int id) {
         comentarioService.eliminarComentario(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Comentario eliminado con éxito"));
     }
 
-    @GetMapping("/countComentariosByProduct/{id}")
-    public ResponseEntity<Integer> contarComentariosPorProducto(int id) {
+    @GetMapping("/count/producto/{id}")
+    public ResponseEntity<ApiResponse<Integer>> contarComentariosPorProducto(int id) {
         int count = comentarioService.contarComentariosDeProducto(id);
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(ApiResponse.success(count, "Total de comentarios obtenido con éxito"));
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Integer> contarComentarios() {
+    public ResponseEntity<ApiResponse<Integer>> contarComentarios() {
         int count = comentarioService.contarComentarios();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(ApiResponse.success(count, "Total de comentarios obtenido con éxito"));
     }
 
 }

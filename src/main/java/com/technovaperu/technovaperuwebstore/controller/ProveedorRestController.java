@@ -5,15 +5,18 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technovaperu.technovaperuwebstore.model.dto.base.ProveedorDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProveedorDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProveedorDTO;
+import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.ProveedorService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -30,39 +33,42 @@ public class ProveedorRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProveedorDTO>> obtenerTodosLosProveedores(int pagina){
+    public ResponseEntity<ApiResponse<List<ProveedorDTO>>> obtenerTodosLosProveedores(int pagina){
         List<ProveedorDTO> proveedores = proveedorService.obtenerTodosLosProveedores(pagina);
-        return ResponseEntity.ok(proveedores);
+        return ResponseEntity.ok(ApiResponse.success(proveedores, "Proveedores obtenidos con éxito"));
     }
 
-    @GetMapping("/getProveedor/{id}")
-    public ResponseEntity<ProveedorDTO> obtenerProveedorPorId(@PathVariable int id){
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ProveedorDTO>> obtenerProveedorPorId(@PathVariable int id){
         ProveedorDTO proveedor = proveedorService.obtenerProveedorPorId(id);
-        return ResponseEntity.ok(proveedor);
+        return ResponseEntity.ok(ApiResponse.success(proveedor, "Proveedor obtenido con éxito"));
     }
 
     @PostMapping
-    public ResponseEntity<ProveedorDTO> crearProveedor(@RequestBody CrearProveedorDTO proveedor){
+    public ResponseEntity<ApiResponse<ProveedorDTO>> crearProveedor(@RequestBody CrearProveedorDTO proveedor){
         ProveedorDTO proveedorCreado = proveedorService.crearProveedor(proveedor);
-        return new ResponseEntity<>(proveedorCreado, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+            ApiResponse.success(proveedorCreado, "Proveedor creado con éxito"),
+            HttpStatus.CREATED
+        );
     }
 
-    @PostMapping("/updateProveedor/{id}")
-    public ResponseEntity<Void> actualizarProveedor(@PathVariable int id, @RequestBody ActualizarProveedorDTO proveedor){
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> actualizarProveedor(@PathVariable int id, @RequestBody ActualizarProveedorDTO proveedor){
         proveedorService.actualizarProveedor(id, proveedor);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Proveedor actualizado con éxito"));
     }
 
-    @GetMapping("/deleteProveedor/{id}")
-    public ResponseEntity<Void> eliminarProveedor(@PathVariable int id){
+    @DeleteMapping("/{id}") 
+    public ResponseEntity<ApiResponse<Void>> eliminarProveedor(@PathVariable int id){
         proveedorService.eliminarProveedor(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Proveedor eliminado con éxito"));
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Integer> contarProveedores(){
+    public ResponseEntity<ApiResponse<Integer>> contarProveedores(){
         int count = proveedorService.contarProveedores();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(ApiResponse.success(count, "Total de proveedores obtenido con éxito"));
     }
     
 }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.technovaperu.technovaperuwebstore.model.dto.base.LoteDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearLoteDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarLoteDTO;
+import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.LoteService;
 
 import jakarta.validation.Valid;
@@ -35,45 +36,48 @@ public class LoteRestController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<LoteDTO> obtenerLote(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<LoteDTO>> obtenerLote(@PathVariable int id) {
         LoteDTO lote = loteService.obtenerLotePorId(id);
-        return ResponseEntity.ok(lote);
+        return ResponseEntity.ok(ApiResponse.success(lote, "Lote obtenido con éxito"));
     }
     
     @GetMapping
-    public ResponseEntity<List<LoteDTO>> obtenerTodosLosLotes() {
+    public ResponseEntity<ApiResponse<List<LoteDTO>>> obtenerTodosLosLotes() {
         List<LoteDTO> lotes = loteService.obtenerTodosLosLotes();
-        return ResponseEntity.ok(lotes);
+        return ResponseEntity.ok(ApiResponse.success(lotes, "Lotes obtenidos con éxito"));
     }
     
     @GetMapping("/producto/{idProducto}")
-    public ResponseEntity<List<LoteDTO>> obtenerLotesPorProducto(@PathVariable int idProducto) {
+    public ResponseEntity<ApiResponse<List<LoteDTO>>> obtenerLotesPorProducto(@PathVariable int idProducto) {
         List<LoteDTO> lotes = loteService.obtenerLotesPorProducto(idProducto);
-        return ResponseEntity.ok(lotes);
+        return ResponseEntity.ok(ApiResponse.success(lotes, "Lotes obtenidos con éxito"));
     }
     
     @PostMapping
-    public ResponseEntity<LoteDTO> crearLote(@Valid @RequestBody CrearLoteDTO loteDTO) {
+    public ResponseEntity<ApiResponse<LoteDTO>> crearLote(@Valid @RequestBody CrearLoteDTO loteDTO) {
         int nuevoId = loteService.crearLote(loteDTO);
         LoteDTO nuevoLote = loteService.obtenerLotePorId(nuevoId);
-        return new ResponseEntity<>(nuevoLote, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+            ApiResponse.success(nuevoLote, "Lote creado con éxito"),
+            HttpStatus.CREATED
+        );
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Void> actualizarLote(@PathVariable int id, @Valid @RequestBody ActualizarLoteDTO loteDTO) {
+    public ResponseEntity<ApiResponse<Void>> actualizarLote(@PathVariable int id, @Valid @RequestBody ActualizarLoteDTO loteDTO) {
         loteService.actualizarLote(id, loteDTO);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Lote actualizado con éxito"));
     }
     
     @GetMapping("/count")
-    public ResponseEntity<Integer> contarLotes() {
+    public ResponseEntity<ApiResponse<Integer>> contarLotes() {
         int cantidad = loteService.contarLotes();
-        return ResponseEntity.ok(cantidad);
+        return ResponseEntity.ok(ApiResponse.success(cantidad, "Total de lotes obtenido con éxito"));
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarLote(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarLote(@PathVariable int id) {
         loteService.eliminarLote(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Lote eliminado con éxito"));
     }
 }

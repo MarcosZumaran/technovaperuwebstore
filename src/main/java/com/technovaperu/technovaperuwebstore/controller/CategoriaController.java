@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.technovaperu.technovaperuwebstore.model.dto.base.CategoriaDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearCategoriaDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarCategoriaDTO;
+import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.CategoriaService;
 
 import jakarta.validation.Valid;
@@ -26,40 +27,43 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoriaDTO>> obtenerTodasLasCategorias() {
+    public ResponseEntity<ApiResponse<List<CategoriaDTO>>> obtenerTodasLasCategorias() {
         List<CategoriaDTO> categorias = categoriaService.obtenerTodasLasCategorias();
-        return ResponseEntity.ok(categorias);
+        return ResponseEntity.ok(ApiResponse.success(categorias, "Categorias obtenidas con éxito"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoriaDTO> obtenerCategoriaPorId(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<CategoriaDTO>> obtenerCategoriaPorId(@PathVariable int id) {
         CategoriaDTO categoria = categoriaService.obtenerCategoriaPorId(id);
-        return ResponseEntity.ok(categoria);
+        return ResponseEntity.ok(ApiResponse.success(categoria, "Categoria obtenida con éxito"));
     }
 
     @PostMapping
-    public ResponseEntity<CategoriaDTO> crearCategoria(@Valid @RequestBody CrearCategoriaDTO categoriaDTO) {
+    public ResponseEntity<ApiResponse<CategoriaDTO>> crearCategoria(@Valid @RequestBody CrearCategoriaDTO categoriaDTO) {
         CategoriaDTO categoriaCreada = categoriaService.crearCategoria(categoriaDTO);
-        return new ResponseEntity<>(categoriaCreada, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+            ApiResponse.success(categoriaCreada, "Categoria creada con éxito"),
+            HttpStatus.CREATED
+        );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> actualizarCategoria(
+    public ResponseEntity<ApiResponse<Void>> actualizarCategoria(
             @PathVariable int id,
             @Valid @RequestBody ActualizarCategoriaDTO categoriaDTO) {
         categoriaService.actualizarCategoria(id, categoriaDTO);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Categoria actualizada con éxito"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarCategoria(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<Void>> eliminarCategoria(@PathVariable int id) {
         categoriaService.eliminarCategoria(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Categoria eliminada con éxito"));
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Integer> contarCategorias() {
+    public ResponseEntity<ApiResponse<Integer>> contarCategorias() {
         int count = categoriaService.contarCategorias();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(ApiResponse.success(count, "Total de categorias obtenido con éxito"));
     }
 }

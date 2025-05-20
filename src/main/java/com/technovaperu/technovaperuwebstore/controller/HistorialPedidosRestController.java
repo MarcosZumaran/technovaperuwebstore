@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.technovaperu.technovaperuwebstore.model.dto.base.HistorialPedidosDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearHistorialPedidosDTO;
+import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.HistorialPedidosService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -30,34 +31,37 @@ public class HistorialPedidosRestController {
         this.historialPedidosService = historialPedidosService;
     }
 
-    @GetMapping("/getHistorialPedidosByPedido/{id}")
-    public ResponseEntity<List<HistorialPedidosDTO>> obtenerHistorialPorPedido(@PathVariable int id, @RequestParam(name = "pagina", required = false, defaultValue = "1") int pagina) {
+    @GetMapping("/pedido/{id}")
+    public ResponseEntity<ApiResponse<List<HistorialPedidosDTO>>> obtenerHistorialPorPedido(@PathVariable int id, @RequestParam(name = "pagina", required = false, defaultValue = "1") int pagina) {
         List<HistorialPedidosDTO> historialPedidos = historialPedidosService.obtenerHistorialPorPedido(id, pagina);
-        return ResponseEntity.ok(historialPedidos);
+        return ResponseEntity.ok(ApiResponse.success(historialPedidos, "Historial pedido obtenidos con éxito"));
     }
 
-    @GetMapping("/getHistorialPedido/{id}")
-    public ResponseEntity<HistorialPedidosDTO> obtenerHistorialPorId(@PathVariable int id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<HistorialPedidosDTO>> obtenerHistorialPorId(@PathVariable int id) {
         HistorialPedidosDTO historialPedido = historialPedidosService.obtenerHistorialPorId(id);
-        return ResponseEntity.ok(historialPedido);
+        return ResponseEntity.ok(ApiResponse.success(historialPedido, "Historial pedido obtenido con éxito"));
     }
 
     @PostMapping
-    public ResponseEntity<HistorialPedidosDTO> crearHistorialPedido(@RequestBody CrearHistorialPedidosDTO historialPedido) {
+    public ResponseEntity<ApiResponse<HistorialPedidosDTO>> crearHistorialPedido(@RequestBody CrearHistorialPedidosDTO historialPedido) {
         HistorialPedidosDTO historialPedidoCreado = historialPedidosService.crearHistorialPedido(historialPedido);
-        return new ResponseEntity<>(historialPedidoCreado, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+            ApiResponse.success(historialPedidoCreado, "Historial pedido creado con éxito"),
+            HttpStatus.CREATED
+        );
     }
 
-    @DeleteMapping("/deleteHistorialPedido/{id}")
-    public ResponseEntity<Void> eliminarHistorialPedido(@PathVariable int id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> eliminarHistorialPedido(@PathVariable int id) {
         historialPedidosService.eliminarHistorialPedido(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Historial pedido eliminado con éxito"));
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Integer> contarHistorialPedidos() {
+    public ResponseEntity<ApiResponse<Integer>> contarHistorialPedidos() {
         int count = historialPedidosService.contarHistorialPedidos();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(ApiResponse.success(count, "Total de historial pedidos obtenido con éxito"));
     }
     
 }

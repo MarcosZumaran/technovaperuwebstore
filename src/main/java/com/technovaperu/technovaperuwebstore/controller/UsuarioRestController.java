@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.technovaperu.technovaperuwebstore.model.dto.base.UsuarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearUsuarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarUsuarioDTO;
+import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.UsuarioService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -32,40 +33,43 @@ public class UsuarioRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UsuarioDTO>> obtenerTodosLosUsuarios(@RequestParam(defaultValue = "1") int page){
+    public ResponseEntity<ApiResponse<List<UsuarioDTO>>> obtenerTodosLosUsuarios(@RequestParam(defaultValue = "1") int page){
         List<UsuarioDTO> usuarios = usuarioService.obtenerTodosLosUsuarios(page);
-        return ResponseEntity.ok(usuarios);
+        return ResponseEntity.ok(ApiResponse.success(usuarios, "Usuarios obtenidos con éxito"));
     }
 
     @GetMapping("/getUsuario/{id}")
-    public ResponseEntity<UsuarioDTO> obtenerUsuarioPorId(@PathVariable int id){
+    public ResponseEntity<ApiResponse<UsuarioDTO>> obtenerUsuarioPorId(@PathVariable int id){
         UsuarioDTO usuario = usuarioService.obtenerUsuarioPorId(id);
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok(ApiResponse.success(usuario, "Usuario obtenido con éxito"));
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioDTO> crearUsuario(@RequestBody CrearUsuarioDTO usuario){
+    public ResponseEntity<ApiResponse<UsuarioDTO>> crearUsuario(@RequestBody CrearUsuarioDTO usuario){
         UsuarioDTO user = usuarioService.crearUsuario(usuario);
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+            ApiResponse.success(user, "Usuario creado con éxito"),
+            HttpStatus.CREATED
+        );
 
     }
 
     @PostMapping("/updateUsuario/{id}")
-    public ResponseEntity<Void> actualizarUsuario(@PathVariable int id, @RequestBody ActualizarUsuarioDTO updates){
+    public ResponseEntity<ApiResponse<Void>> actualizarUsuario(@PathVariable int id, @RequestBody ActualizarUsuarioDTO updates){
         usuarioService.actualizarUsuario(id, updates);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Usuario actualizado con éxito"));
     }
 
     @DeleteMapping("/deleteUsuario/{id}")
-    public ResponseEntity<Void> eliminarUsuario(@PathVariable int id){
+    public ResponseEntity<ApiResponse<Void>> eliminarUsuario(@PathVariable int id){
         usuarioService.eliminarUsuario(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null, "Usuario eliminado con éxito"));
     }
 
     @GetMapping("/count")
-    public ResponseEntity<Integer> contarUsuarios(){
+    public ResponseEntity<ApiResponse<Integer>> contarUsuarios(){
         int cantidad = usuarioService.contarUsuarios();
-        return ResponseEntity.ok(cantidad);
+        return ResponseEntity.ok(ApiResponse.success(cantidad, "Total de usuarios obtenido con éxito"));
     }
     
 }
