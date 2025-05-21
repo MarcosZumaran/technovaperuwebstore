@@ -46,20 +46,20 @@ public class LoteModel {
     /**
      * Costo del lote.
      */
-    @Column(name = "costo", nullable = false)
+    @Column(name = "costo", nullable = false, precision = 10, scale = 2)
     private BigDecimal costo;
 
     /**
      * Precio del lote.
      */
-    @Column(name = "precio", nullable = false)
+    @Column(name = "precio", nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
     /**
      * Cantidad de items o unidades del lote.
      */
-    @Column(name = "cantidad", nullable = false)
-    private int cantidad;
+    @Column(name = "cantidad", nullable = false, precision = 10, scale = 3)
+    private BigDecimal cantidad;
 
     /**
      * Constructor de la clase que inicializa los campos.
@@ -69,7 +69,7 @@ public class LoteModel {
      * @param precio Precio del lote.
      * @param cantidad Cantidad de items o unidades del lote.
      */
-    public LoteModel(ProductoModel producto, String unidad_medida, BigDecimal costo, BigDecimal precio, int cantidad) {
+    public LoteModel(ProductoModel producto, String unidad_medida, BigDecimal costo, BigDecimal precio, BigDecimal cantidad) {
         this.producto = producto;
         this.unidad_medida = unidad_medida;
         this.costo = costo;

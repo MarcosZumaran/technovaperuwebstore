@@ -34,7 +34,7 @@ public class UnidadMedidaModel {
     @Column(name = "unidad_medida", nullable = false) // Columna para la unidad de medida
     String unidad_medida;
 
-    @Column(name = "precio", nullable = false) // Columna para el precio
+    @Column(name = "precio", nullable = false, precision = 10, scale = 2) // Columna para el precio
     BigDecimal precio;
 
     /**

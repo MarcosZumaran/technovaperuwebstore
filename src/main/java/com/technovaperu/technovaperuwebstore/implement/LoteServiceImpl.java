@@ -38,7 +38,7 @@ public class LoteServiceImpl implements LoteService {
             .unidadMedida(rs.getString("unidad_medida"))
             .costo(rs.getBigDecimal("costo"))
             .precio(rs.getBigDecimal("precio"))
-            .cantidad(rs.getInt("cantidad"))
+            .cantidad(rs.getBigDecimal("cantidad"))
             .build();
 
     /**
@@ -100,7 +100,7 @@ public class LoteServiceImpl implements LoteService {
             ps.setString(2, lote.getUnidadMedida());
             ps.setBigDecimal(3, lote.getCosto());
             ps.setBigDecimal(4, lote.getPrecio());
-            ps.setInt(5, lote.getCantidad());
+            ps.setBigDecimal(5, lote.getCantidad());
             return ps;
         }, keyHolder);
 

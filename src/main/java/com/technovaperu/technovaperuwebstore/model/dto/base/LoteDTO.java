@@ -44,6 +44,6 @@ public class LoteDTO {
     @NotNull(message = "El cantidad no puede ser nula")
     @Positive(message = "El cantidad debe ser mayor que 0")
     @Schema(description = "Cantidad del lote", example = "100")
-    int cantidad;
+    BigDecimal cantidad;
     
 }
