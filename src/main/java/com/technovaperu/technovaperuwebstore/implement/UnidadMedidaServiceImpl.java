@@ -24,7 +24,7 @@ import java.util.Objects;
 /**
  * Implementación de la interfaz {@link UnidadMedidaService} que utiliza JDBC para acceder a la base de datos.
  * 
- * @author Carlos Montell
+ * @author Marcos Zumaran
  */
 @Service
 public class UnidadMedidaServiceImpl implements UnidadMedidaService {

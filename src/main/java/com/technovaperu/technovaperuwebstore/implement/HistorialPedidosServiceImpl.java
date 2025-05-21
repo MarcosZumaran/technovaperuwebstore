@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
-import com.technovaperu.technovaperuwebstore.model.HistorialPedidoModel.EstadoHistorialPedido;
 import com.technovaperu.technovaperuwebstore.model.dto.base.HistorialPedidosDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearHistorialPedidosDTO;
 import com.technovaperu.technovaperuwebstore.services.HistorialPedidosService;
@@ -36,7 +35,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
     private final RowMapper<HistorialPedidosDTO> historialPedidosRowMapper = (rs, rowNum) -> HistorialPedidosDTO.builder()
             .id(rs.getInt("id"))
             .idPedido(rs.getInt("id_pedido"))
-            .estado(EstadoHistorialPedido.valueOf(rs.getString("estado")))
+            .estado(rs.getString("estado"))
             .fechaEstado(rs.getTimestamp("fecha_estado").toLocalDateTime())
             .build();
 
@@ -90,7 +89,7 @@ public class HistorialPedidosServiceImpl implements HistorialPedidosService{
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, historial.getIdPedido());
-            ps.setString(2, historial.getEstado().name());
+            ps.setString(2, historial.getEstado());
             return ps;
         }, keyHolder);
 

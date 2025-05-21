@@ -1,7 +1,5 @@
 package com.technovaperu.technovaperuwebstore.model.dto.create;
 
-import com.technovaperu.technovaperuwebstore.model.HistorialPedidoModel.EstadoHistorialPedido;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +21,6 @@ public class CrearHistorialPedidosDTO {
     private int idPedido;
 
     @Schema(description = "Estado del historial del pedido", example = "PENDIENTE")
-    private EstadoHistorialPedido estado;
+    private String estado;
 
 }

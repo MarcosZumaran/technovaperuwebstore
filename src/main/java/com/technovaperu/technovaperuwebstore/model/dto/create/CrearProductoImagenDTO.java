@@ -1,7 +1,5 @@
 package com.technovaperu.technovaperuwebstore.model.dto.create;
 
-import com.technovaperu.technovaperuwebstore.model.ProductolImagenModel.Tipo;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +25,6 @@ public class CrearProductoImagenDTO {
     private String url;
     
     @Schema(description = "Tipo de la imagen", example = "GALERIA")
-    private Tipo tipo;
+    private String tipo;
     
 }

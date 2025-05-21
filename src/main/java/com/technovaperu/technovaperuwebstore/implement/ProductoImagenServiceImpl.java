@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
-import com.technovaperu.technovaperuwebstore.model.ProductolImagenModel.Tipo;
 import com.technovaperu.technovaperuwebstore.model.dto.base.ProductoImagenDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProductoImagenDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProductoImagenDTO;
@@ -24,7 +23,7 @@ import com.technovaperu.technovaperuwebstore.services.ProductoImagenService;
 /**
  * Implementación de la interfaz {@link ProductoImagenService} que utiliza JDBC para acceder a la base de datos.
  * 
- * @author Carlos Montell
+ * @author Marcos Zumaran
  */
 @Service
 public class ProductoImagenServiceImpl implements ProductoImagenService {
@@ -43,7 +42,7 @@ public class ProductoImagenServiceImpl implements ProductoImagenService {
             .id(rs.getInt("id"))
             .idProducto(rs.getInt("id_producto"))
             .url(rs.getString("url"))
-            .tipo(Tipo.valueOf(rs.getString("tipo")))
+            .tipo(rs.getString("tipo"))
             .build();
 
     @Override
@@ -77,7 +76,7 @@ public class ProductoImagenServiceImpl implements ProductoImagenService {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, imagen.getIdProducto());
             ps.setString(2, imagen.getUrl());
-            ps.setString(3, imagen.getTipo().name());
+            ps.setString(3, imagen.getTipo());
             return ps;
         }, keyHolder);
 
@@ -104,7 +103,7 @@ public class ProductoImagenServiceImpl implements ProductoImagenService {
             throw new RecursoNoEncontradoException("Imagen", "id", id);
         }
         String sql = "UPDATE producto_imagen SET url = ?, tipo = ? WHERE id = ?";
-        jdbcTemplate.update(sql, imagen.getUrl(), imagen.getTipo().name(), id);
+        jdbcTemplate.update(sql, imagen.getUrl(), imagen.getTipo(), id);
     }
 
     @Override

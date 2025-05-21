@@ -24,7 +24,7 @@ import com.technovaperu.technovaperuwebstore.services.ProductoService;
 /**
  * Implementación de la interfaz {@link ProductoService} que utiliza JDBC para acceder a la base de datos.
  * 
- * @author Carlos Montell
+ * @author Marcos Zumaran
  */
 @Service
 public class ProductoServiceImpl implements ProductoService {

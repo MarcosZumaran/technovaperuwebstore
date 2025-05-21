@@ -2,8 +2,6 @@ package com.technovaperu.technovaperuwebstore.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,9 +44,8 @@ public class ProductolImagenModel {
     /**
      * Tipo de imagen. Puede ser PORTADA o GALERIA.
      */
-    @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false)
-    private Tipo tipo;
+    private String tipo;
 
     /**
      * Constructor para crear una instancia de {@link ProductolImagen}.
@@ -57,35 +54,9 @@ public class ProductolImagenModel {
      * @param url      URL de la imagen.
      * @param tipo     Tipo de imagen.
      */
-    public ProductolImagenModel(ProductoModel producto, String url, Tipo tipo) {
+    public ProductolImagenModel(ProductoModel producto, String url, String tipo) {
         this.producto = producto;
         this.url = url;
         this.tipo = tipo;
     }
-
-    /**
-     * Enumerado que indica el tipo de imagen.
-     */
-    public enum Tipo {
-        /**
-         * Imagen de portada del producto.
-         */
-        PORTADA("PORTADA"),
-
-        /**
-         * Imagen de la galeria del producto.
-         */
-        GALERIA("GALERIA");
-
-        private final String value;
-
-        Tipo(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-
 }

@@ -24,7 +24,7 @@ import com.technovaperu.technovaperuwebstore.services.UsuarioService;
 /**
  * Implementación de la interfaz {@link UsuarioService} que utiliza JDBC para acceder a la base de datos.
  * 
- * @author Carlos Montell
+ * @author Marcos Zumaran
  */
 @Service
 public class UsuarioServiceImpl implements UsuarioService {

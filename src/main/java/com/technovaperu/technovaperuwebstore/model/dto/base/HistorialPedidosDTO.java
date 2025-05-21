@@ -1,7 +1,6 @@
 package com.technovaperu.technovaperuwebstore.model.dto.base;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.technovaperu.technovaperuwebstore.model.HistorialPedidoModel.EstadoHistorialPedido;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -27,7 +26,7 @@ public class HistorialPedidosDTO {
     private int idPedido;
 
     @Schema(description = "Estado del historial del pedido", example = "PENDIENTE")
-    private EstadoHistorialPedido estado;
+    private String estado;
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Schema(description = "Fecha y hora en que se cambió el estado del pedido", example = "2023-01-01 10:00:00")

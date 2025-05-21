@@ -1,7 +1,5 @@
 package com.technovaperu.technovaperuwebstore.model.dto.update;
 
-import com.technovaperu.technovaperuwebstore.model.ProductolImagenModel.Tipo;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,6 +27,6 @@ public class ActualizarProductoImagenDTO {
     private String url;
     
     @Schema(description = "Tipo de la imagen", example = "PORTADA")
-    private Tipo tipo;
+    private String tipo;
 
 }

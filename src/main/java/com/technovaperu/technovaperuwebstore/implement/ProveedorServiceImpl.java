@@ -24,7 +24,7 @@ import com.technovaperu.technovaperuwebstore.services.ProveedorService;
  * Implementacion de la interfaz {@link ProveedorService} que utiliza JDBC para
  * interactuar con la base de datos.
  *
- * @author Carlos Pomacallao Carlos Pomacallao
+ * @author Marcos Zumaran
  */
 @Service
 public class ProveedorServiceImpl implements ProveedorService {
