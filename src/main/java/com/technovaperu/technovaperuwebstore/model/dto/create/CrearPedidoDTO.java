@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.technovaperu.technovaperuwebstore.model.PedidoModel.EstadoPedido;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -32,7 +31,7 @@ public class CrearPedidoDTO {
     private LocalDateTime fechaPedido;
 
     @Schema(description = "Estado actual del pedido", example = "PENDIENTE")
-    private EstadoPedido estado;
+    private String estado;
 
     @Schema(description = "Monto total del pedido", example = "1299.99")
     private BigDecimal total;

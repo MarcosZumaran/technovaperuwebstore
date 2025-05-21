@@ -1,6 +1,5 @@
 package com.technovaperu.technovaperuwebstore.model.dto.update;
 
-import com.technovaperu.technovaperuwebstore.model.PedidoModel.EstadoPedido;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class ActualizarPedidoDTO {
 
     @Schema(description = "Estado actual del pedido", example = "ENVIADO")
-    private EstadoPedido estado;
+    private String estado;
 
     @NotBlank(message = "La direccion de envio no puede estar vacía")
     @Size(max = 255, message = "La direccion de envio no puede exceder 255 caracteres")

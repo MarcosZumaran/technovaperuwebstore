@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
-import com.technovaperu.technovaperuwebstore.model.PedidoModel.EstadoPedido;
 import com.technovaperu.technovaperuwebstore.model.dto.base.PedidoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearPedidoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarPedidoDTO;
@@ -36,7 +35,7 @@ public class PedidoServiceImpl implements PedidoService{
     private final RowMapper<PedidoDTO> pedidoRowMapper = (rs, rowNum) -> PedidoDTO.builder()
             .id(rs.getInt("id"))
             .idUsuario(rs.getInt("id_usuario"))
-            .estado(EstadoPedido.valueOf(rs.getString("estado")))
+            .estado(rs.getString("estado"))
             .total(rs.getBigDecimal("total"))
             .direccionEnvio(rs.getString("direccion_envio"))
             .build();
@@ -93,7 +92,7 @@ public class PedidoServiceImpl implements PedidoService{
             ps.setInt(1, pedido.getIdUsuario());
             ps.setString(2, pedido.getDireccionEnvio());
             ps.setBigDecimal(3, pedido.getTotal());
-            ps.setString(4, pedido.getEstado().name());
+            ps.setString(4, pedido.getEstado());
             return ps;
         }, keyHolder);
 

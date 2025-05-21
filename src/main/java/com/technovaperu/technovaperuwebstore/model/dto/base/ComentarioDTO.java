@@ -3,7 +3,6 @@ package com.technovaperu.technovaperuwebstore.model.dto.base;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.technovaperu.technovaperuwebstore.model.ComentarioModel.EstadoComentario;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -41,9 +40,6 @@ public class ComentarioDTO {
     @Positive(message = "La calificacion debe ser mayor o igual que 0")
     @Schema(description = "Calificacion del comentario", example = "5")
     private int calificacion;
-
-    @Schema(description = "Estado del comentario", example = "OCULTO")
-    private EstadoComentario estado;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Schema(description = "Fecha y hora de creación del comentario", example = "2023-01-01 10:00:00")

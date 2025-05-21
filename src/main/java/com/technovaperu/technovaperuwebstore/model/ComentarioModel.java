@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -61,13 +59,6 @@ public class ComentarioModel {
     private int calificacion;
 
     /**
-     * Estado del comentario. Puede ser VISIBLE, OCULTO o BORRADO.
-     */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false) // Columna de estado
-    private EstadoComentario estado = EstadoComentario.VISIBLE;
-
-    /**
      * Fecha y hora en que se creó el comentario.
      */
     @Column(name = "fecha_creacion", nullable = false) // Columna de fecha de creación
@@ -107,24 +98,5 @@ public class ComentarioModel {
     public void preUpdate() {
         // Establece la fecha de modificación a la fecha y hora actual
         this.fecha_modificacion = LocalDateTime.now();
-    }
-
-    /**
-     * Enumerado que representa el estado de un comentario.
-     * <ul>
-     *     <li>{@link #VISIBLE}: El comentario es visible.</li>
-     *     <li>{@link #HIDDEN}: El comentario es invisible.</li>
-     * </ul>
-     */
-    public enum EstadoComentario {
-        /**
-         * El comentario es visible.
-         */
-        VISIBLE,
-
-        /**
-         * El comentario es invisible.
-         */
-        OCULTO
     }
 }

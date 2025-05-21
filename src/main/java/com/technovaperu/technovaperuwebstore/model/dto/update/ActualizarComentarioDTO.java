@@ -1,6 +1,5 @@
 package com.technovaperu.technovaperuwebstore.model.dto.update;
 
-import com.technovaperu.technovaperuwebstore.model.ComentarioModel.EstadoComentario;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -25,7 +24,4 @@ public class ActualizarComentarioDTO {
     @Positive(message = "La calificacion debe ser mayor o igual que 0")
     @Schema(description = "Calificacion del comentario", example = "5")
     private int calificacion;
-
-    @Schema(description = "Estado del comentario", example = "OCULTO")
-    private EstadoComentario estado;
 }

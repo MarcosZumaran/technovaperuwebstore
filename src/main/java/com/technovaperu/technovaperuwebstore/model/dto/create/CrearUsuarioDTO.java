@@ -1,6 +1,5 @@
 package com.technovaperu.technovaperuwebstore.model.dto.create;
 
-import com.technovaperu.technovaperuwebstore.model.UsuarioModel.Rol;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -47,7 +46,4 @@ public class CrearUsuarioDTO {
     @Size(min = 8,  max = 255, message = "La contraseña debe tener minimo 8 caracteres y no puede exceder 255")
     @Schema(description = "Contraseña del usuario", example = "12345678")
     private String password;
-
-    @Schema(description = "Rol del usuario en el sistema", example = "ADMIN")
-    private Rol rol;
 }

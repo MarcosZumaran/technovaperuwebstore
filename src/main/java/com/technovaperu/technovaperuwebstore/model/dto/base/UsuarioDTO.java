@@ -3,7 +3,6 @@ package com.technovaperu.technovaperuwebstore.model.dto.base;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.technovaperu.technovaperuwebstore.model.UsuarioModel.Rol;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -56,9 +55,6 @@ public class UsuarioDTO {
     @Size(max = 20, message = "El teléfono no puede exceder 20 caracteres")
     @Schema(description = "Teléfono del usuario", example = "999888777")
     private String telefono;
-
-    @Schema(description = "Rol del usuario en el sistema", example = "CLIENTE")
-    private Rol rol;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Schema(description = "Fecha de registro del usuario", example = "2023-01-01 10:00:00")

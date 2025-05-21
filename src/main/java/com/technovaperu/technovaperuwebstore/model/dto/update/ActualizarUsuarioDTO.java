@@ -46,7 +46,4 @@ public class ActualizarUsuarioDTO {
     @Schema(description = "Contraseña del usuario", example = "12345678")
     @Size(max =  255, message = "La contraseña no puede exceder 255 caracteres")
     private String contrasena; // puede ser null si no se cambia
-    
-    @Schema(description = "Rol del usuario en el sistema", example = "ADMIN")
-    private String rol;
 }

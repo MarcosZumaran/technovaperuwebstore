@@ -91,15 +91,6 @@ public class UsuarioModel {
     private String telefono;
 
     /**
-     * Rol del usuario
-     * 
-     * @param rol
-     */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "rol", nullable = false)
-    private Rol rol = Rol.CLIENTE;
-
-    /**
      * Fecha de creación del usuario.
      * Este campo es asignado automáticamente al persistir el objeto.
      */
@@ -142,14 +133,13 @@ public class UsuarioModel {
     private List<FavoritoModel> favoritos = new ArrayList<>();
 
     public UsuarioModel(String nombre, String apellido, String email, String password, String direccion,
-            String telefono, Rol rol) {
+            String telefono) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
         this.password = password;
         this.direccion = direccion;
         this.telefono = telefono;
-        this.rol = rol;
     }
 
     /**
@@ -173,19 +163,4 @@ public class UsuarioModel {
         this.fechaModificacion = LocalDateTime.now(); // Fecha de modificación
     }
 
-    // Enumeraciones
-    public enum Rol {
-        ADMIN("ADMIN"),
-        CLIENTE("CLIENTE");
-
-        private final String value;
-
-        Rol(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
 }

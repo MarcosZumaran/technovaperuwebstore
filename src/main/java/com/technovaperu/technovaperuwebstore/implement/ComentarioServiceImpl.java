@@ -19,7 +19,6 @@ import com.technovaperu.technovaperuwebstore.services.ComentarioService;
 
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
-import com.technovaperu.technovaperuwebstore.model.ComentarioModel.EstadoComentario;
 import com.technovaperu.technovaperuwebstore.model.dto.base.ComentarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearComentarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarComentarioDTO;
@@ -35,7 +34,6 @@ public class ComentarioServiceImpl implements ComentarioService{
             .idUsuario(rs.getInt("id_usuario"))
             .texto(rs.getString("texto"))
             .calificacion(rs.getInt("calificacion"))
-            .estado(EstadoComentario.valueOf(rs.getString("estado")))
             .fechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime())
             .fechaModificacion(rs.getTimestamp("fecha_modificacion").toLocalDateTime())
             .build();
@@ -109,7 +107,6 @@ public class ComentarioServiceImpl implements ComentarioService{
                 .idUsuario(comentario.getIdUsuario())
                 .texto(comentario.getTexto())
                 .calificacion(comentario.getCalificacion())
-                .estado(EstadoComentario.VISIBLE)
                 .fechaCreacion(LocalDateTime.now())
                 .fechaModificacion(LocalDateTime.now())
                 .build();

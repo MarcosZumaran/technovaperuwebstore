@@ -65,7 +65,7 @@ public class PedidoModel {
      */
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private EstadoPedido estado = EstadoPedido.PENDIENTE;
+    private String estado = "PENDIENTE";
 
     /**
      * Total del pedido.
@@ -101,7 +101,7 @@ public class PedidoModel {
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<HistorialPedidoModel> historiales = new ArrayList<>();
 
-    public PedidoModel(UsuarioModel cliente, EstadoPedido estado, BigDecimal total, String direccion_envio) {
+    public PedidoModel(UsuarioModel cliente, String estado, BigDecimal total, String direccion_envio) {
         this.cliente = cliente;
         this.estado = estado;
         this.total = total;
@@ -116,12 +116,5 @@ public class PedidoModel {
     public void prePersist() {
         // Establece la fecha del pedido a la fecha actual
         this.fecha_pedido = LocalDate.now();
-    }
-
-    public enum EstadoPedido {
-        PENDIENTE,
-        ENVIADO,
-        ENTREGADO,
-        CANCELADO
     }
 }

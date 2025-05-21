@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
-import com.technovaperu.technovaperuwebstore.model.UsuarioModel.Rol;
 import com.technovaperu.technovaperuwebstore.model.dto.base.UsuarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearUsuarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarUsuarioDTO;
@@ -45,7 +44,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             .password(rs.getString("password"))
             .direccion(rs.getString("direccion"))
             .telefono(rs.getString("telefono"))
-            .rol(Rol.valueOf(rs.getString("rol")))
             .build();
     
     /**
@@ -101,7 +99,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             ps.setString(4, usuario.getDireccion());
             ps.setString(5, usuario.getTelefono());
             ps.setString(6, usuario.getPassword());
-            ps.setString(7, usuario.getRol().getValue());
             return ps;
         }, keyHolder);
 
@@ -120,7 +117,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .password(usuario.getPassword())
                 .direccion(usuario.getDireccion())
                 .telefono(usuario.getTelefono())
-                .rol(usuario.getRol())
                 .fechaRegistro(LocalDateTime.now())
                 .fechaModificacion(LocalDateTime.now())
                 .build();
@@ -139,7 +135,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new RecursoNoEncontradoException("Usuario", "id", id);
         }
         String sql = "UPDATE usuario SET nombre = ?, apellido = ?, email = ?, direccion = ?, telefono = ?, contrasena = ?, rol = ? WHERE id = ?";
-        jdbcTemplate.update(sql, usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getDireccion(), usuario.getTelefono(), usuario.getContrasena(), usuario.getRol(), id);
+        jdbcTemplate.update(sql, usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getDireccion(), usuario.getTelefono(), usuario.getContrasena(), id);
     }
     
     /**
