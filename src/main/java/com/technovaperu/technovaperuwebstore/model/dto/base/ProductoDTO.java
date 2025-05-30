@@ -1,7 +1,6 @@
 
 package com.technovaperu.technovaperuwebstore.model.dto.base;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;

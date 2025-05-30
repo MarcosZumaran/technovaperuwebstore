@@ -1,4 +1,4 @@
-package com.technovaperu.technovaperuwebstore.controller;
+        package com.technovaperu.technovaperuwebstore.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +22,7 @@ public class CategoriaController {
     private final CategoriaService categoriaService;
 
     @Autowired
+    // Constructor injection for CategoriaService
     public CategoriaController(CategoriaService categoriaService) {
         this.categoriaService = categoriaService;
     }
@@ -66,4 +67,5 @@ public class CategoriaController {
         int count = categoriaService.contarCategorias();
         return ResponseEntity.ok(ApiResponse.success(count, "Total de categorias obtenido con éxito"));
     }
+    
 }

@@ -1,7 +1,6 @@
 package com.technovaperu.technovaperuwebstore.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -54,7 +53,7 @@ public class CategoriaModel {
 
     // Relación ManyToMany con ProductoModel
     @OneToMany(mappedBy = "categorias")
-    private Set<ProductoModel> productos = new HashSet<>(); // Relación con productos
+    private List<ProductoModel> productos; // Relación con productos
 
     /**
      * Constructor que recibe el nombre y la descripción de la categoría.

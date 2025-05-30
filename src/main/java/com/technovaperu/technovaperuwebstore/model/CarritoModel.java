@@ -56,7 +56,7 @@ public class CarritoModel {
      * Se carga perezosamente y se elimina en cascada.
      */
     @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ItemCarritoModel> items = new ArrayList<>();
+    private List<ItemCarritoModel> items;
 
     /**
      * Constructor que inicializa el carrito con un cliente.
