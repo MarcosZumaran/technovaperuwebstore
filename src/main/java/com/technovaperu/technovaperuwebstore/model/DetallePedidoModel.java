@@ -2,6 +2,7 @@ package com.technovaperu.technovaperuwebstore.model;
 
 import java.math.BigDecimal;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,7 +16,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Table(name = "detalle_pedido")
 @AllArgsConstructor
@@ -23,62 +23,64 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class DetallePedidoModel {
-    /**
-     * Identificador numérico único del detalle de pedido.
-     * 
-     * Este campo es auto-incrementable y se utiliza como clave
-     * primaria para el detalle de pedido.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto Increment
-    private int id;
 
-    /**
-     * Pedido al que pertenece este detalle de pedido.
-     * 
-     * Este campo se relaciona con la tabla "pedido" y se utiliza para
-     * obtener el pedido al que se le ha agregado este detalle de pedido.
-     */
+    // Atributos de la tabla detalle_pedido
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador del detalle del pedido")
+    private long id;
+
+    // Foreign key
     @ManyToOne
-    @JoinColumn(name = "id_pedido", nullable = false)
+    @JoinColumn(name = "id_pedido")
+    @Schema(description = "Identificador del pedido")
     private PedidoModel pedido;
 
-    /**
-     * Producto que se esta vendiendo.
-     * 
-     * Este campo se relaciona con la tabla "producto" y se utiliza para
-     * obtener el producto que se esta vendiendo en este detalle de pedido.
-     */
+    // Foreign key
     @ManyToOne
-    @JoinColumn(name = "id_producto", nullable = false)
-    private ProductoModel producto;
+    @JoinColumn(name = "id_producto_presentacion")
+    @Schema(description = "Identificador del producto")
+    private ProductoPresentacionModel productoPresentacion;
 
-    /**
-     * Cantidad de productos vendidos.
-     * 
-     * Este campo debe ser mayor a cero y se utiliza para calcular el
-     * subtotal del pedido.
-     */
-    @Column(name = "cantidad", nullable = false)
-    private int cantidad;
+    // Foreign key
+    @ManyToOne
+    @JoinColumn(name = "id_lote")
+    @Schema(description = "Identificador del lote")
+    private LoteModel lote;
 
-    /**
-     * Precio unitario del producto.
-     * 
-     * Este campo debe ser mayor a cero y se utiliza para calcular el
-     * subtotal del pedido.
-     * 
-     * El precio unitario debe ser un valor numérico con dos decimales,
-     * por ejemplo 10.99.
-     */
-    @Column(name = "precio_unitario", nullable = false, precision = 10, scale = 2)
-    private BigDecimal precio_unitario;
-    
-    public DetallePedidoModel(PedidoModel pedido, ProductoModel producto, int cantidad, BigDecimal precio_unitario) {
+    @Column(name = "cantidad", precision = 10, scale = 3)
+    @Schema(description = "Cantidad del detalle del pedido")
+    private BigDecimal cantidad;
+
+    @Column(name = "precio_unitario", precision = 10, scale = 2)
+    @Schema(description = "Precio unitario del detalle del pedido")
+    private BigDecimal precioUnitario;
+
+    @Column(name = "subtotal", precision = 10, scale = 2)
+    @Schema(description = "Precio subtotal del detalle del pedido")
+    private BigDecimal subTotal;
+
+    @Column(name = "nombre_producto", length = 50)
+    @Schema(description = "Nombre del producto")
+    private String nombreProducto;
+
+    @Column(name = "unidad_medida_presentacion", length = 20)
+    @Schema(description = "Unidad de medida del producto")
+    private String unidadmedidaPresentacion;
+
+    // Constructor personalizado para la creación de objetos de la tabla detalle_pedido
+    public DetallePedidoModel(PedidoModel pedido, ProductoPresentacionModel productoPresentacion, LoteModel lote,
+                                BigDecimal cantidad, BigDecimal precioUnitario, BigDecimal subTotal,
+                                String nombreProducto, String unidadmedidaPresentacion) {
         this.pedido = pedido;
-        this.producto = producto;
+        this.productoPresentacion = productoPresentacion;
+        this.lote = lote;
         this.cantidad = cantidad;
-        this.precio_unitario = precio_unitario;
+        this.precioUnitario = precioUnitario;
+        this.subTotal = subTotal;
+        this.nombreProducto = nombreProducto;
+        this.unidadmedidaPresentacion = unidadmedidaPresentacion;
     }
     
 }

@@ -1,9 +1,6 @@
 package com.technovaperu.technovaperuwebstore.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.persistence.CascadeType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,10 +9,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.List;;
 
 @Entity
 @Table(name = "proveedor")
@@ -25,54 +26,64 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProveedorModel {
 
-    /**
-     * Identificador único del proveedor.
-     */
+    // Atributos de la tabla proveedor
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    
-    /**
-     * Nombre del proveedor.
-     */
-    @Column(name = "nombre", nullable = false, length = 100)
-    private String nombre;
-    
-    /**
-     * Dirección del proveedor.
-     */
-    @Column(name = "direccion", nullable = false, length = 255)
+    @Schema(description = "Identificador del proveedor")
+    private long id;
+
+    @Column(name = "nombre_empresa", length = 50)
+    @Schema(description = "Nombre del proveedor")
+    private String nombreEmpresa;
+
+    @Column(name = "ruc", length = 11)
+    @Schema(description = "RUC del proveedor")
+    private String ruc;
+
+    @Column(name = "direccion", length = 50)
+    @Schema(description = "Dirección del proveedor")
     private String direccion;
-    
-    /**
-     * Teléfono del proveedor.
-     */
-    @Column(name = "telefono", nullable = false, length = 20)
+
+    @Column(name = "telefono", length = 50)
+    @Pattern(regexp = "^[0-9]{9,20}$", message = "El teléfono debe tener entre 9 y 20 dígitos")
+    @Schema(description = "Telefono del proveedor")
     private String telefono;
-    
-    /**
-     * Correo electrónico del proveedor.
-     */
-    @Column(name = "email", nullable = false, length = 255)
-    private String email;
-    
-    /**
-     * País del proveedor.
-     */
-    @Column(name = "pais", nullable = false, length = 255)
-    private String pais;
 
-    /**
-     * Lista de productos asociados con el proveedor.
-     */
-    @OneToMany(mappedBy = "proveedor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProductoModel> productos = new ArrayList<>();
+    @Column(name = "correo", length = 100)
+    @Schema(description = "Correo electrónico del proveedor")
+    @Email(message = "El correo no es válido")
+    private String correo;
 
-    public ProveedorModel(String nombre, String direccion, String telefono, String email, String pais) {
-        this.nombre = nombre;
+    @Column(name = "fecha_registro")
+    @Schema(description = "Fecha de creación del proveedor")
+    private LocalDateTime fechaRegistro;
+
+    @Column(name = "fecha_actualizacion")
+    @Schema(description = "Fecha de actualización del proveedor")
+    private LocalDateTime fechaActualizacion;
+
+    @Column(name = "activo")
+    @Schema(description = "Estado del proveedor, true si está activo, false si está inactivo")
+    private boolean activo;
+
+    // --- Listas de relaciones ---
+
+    @OneToMany(mappedBy = "proveedor", fetch = FetchType.LAZY)
+    @Schema(description = "Lista de lotes del proveedor")
+    private List<LoteModel> lotes;
+
+    // Constructor personalizado para la creación de objetos de la tabla proveedor
+
+    public ProveedorModel(String nombreEmpresa, String ruc, String direccion, String telefono, String correo) {
+        this.nombreEmpresa = nombreEmpresa;
+        this.ruc = ruc;
         this.direccion = direccion;
         this.telefono = telefono;
-        this.email = email;
-        this.pais = pais;
+        this.correo = correo;
+        this.fechaRegistro = LocalDateTime.now();
+        this.fechaActualizacion = LocalDateTime.now();
+        this.activo = true; // Por defecto, el proveedor está activo al crearlo
     }
+
 }

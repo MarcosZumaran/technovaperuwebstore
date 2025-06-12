@@ -24,22 +24,14 @@ import java.util.Objects;
 @Service
 public class CategoriaServiceImpl implements CategoriaService {
 
-    private final JdbcTemplate jdbcTemplate;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private final RowMapper<CategoriaDTO> categoriaMapper = (rs, rowNum) -> CategoriaDTO.builder()
             .id(rs.getInt("id"))
             .nombre(rs.getString("nombre"))
             .descripcion(rs.getString("descripcion"))
             .build();
-
-    /**
-     * Constructor de la clase que inyecta la dependencia de JdbcTemplate.
-     * @param jdbcTemplate Instancia de JdbcTemplate para interactuar con la base de datos.
-     */
-    @Autowired
-    public CategoriaServiceImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     /**
      * Obtiene todas las categorías de la base de datos.

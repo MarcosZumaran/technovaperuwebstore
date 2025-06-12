@@ -46,12 +46,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             .telefono(rs.getString("telefono"))
             .build();
     
-    /**
-     * Obtener todos los usuarios paginados.
-     * 
-     * @param pagina Número de página.
-     * @return Lista de usuarios.
-     */
+
     @Override 
     @Transactional(readOnly = true)
     public List<UsuarioDTO> obtenerTodosLosUsuarios(int pagina){
@@ -62,12 +57,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         return jdbcTemplate.query(sql, usuarioRowMapper, limit, offset);
     }
 
-    /**
-     * Obtener un usuario por su ID.
-     * 
-     * @param id ID del usuario.
-     * @return Usuario.
-     */
     @Override 
     @Transactional(readOnly = true)
     public UsuarioDTO obtenerUsuarioPorId(int id){
@@ -79,12 +68,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
     }
 
-    /**
-     * Crear un nuevo usuario.
-     * 
-     * @param usuario Información del usuario a crear.
-     * @return Usuario creado.
-     */
     @Override 
     @Transactional
     public UsuarioDTO crearUsuario(CrearUsuarioDTO usuario){
@@ -122,12 +105,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .build();
     }
     
-    /**
-     * Actualizar un usuario existente.
-     * 
-     * @param id ID del usuario a actualizar.
-     * @param usuario Información actualizada del usuario.
-     */
     @Override 
     @Transactional
     public void actualizarUsuario(int id, ActualizarUsuarioDTO usuario){
@@ -137,12 +114,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         String sql = "UPDATE usuario SET nombre = ?, apellido = ?, email = ?, direccion = ?, telefono = ?, contrasena = ?, rol = ? WHERE id = ?";
         jdbcTemplate.update(sql, usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getDireccion(), usuario.getTelefono(), usuario.getContrasena(), id);
     }
-    
-    /**
-     * Eliminar un usuario existente.
-     * 
-     * @param id ID del usuario a eliminar.
-     */
+
     @Override 
     @Transactional
     public void eliminarUsuario(int id){
@@ -153,11 +125,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         jdbcTemplate.update(sql, id);
     }
 
-    /**
-     * Contar el número total de usuarios.
-     * 
-     * @return Número total de usuarios.
-     */
     @Override 
     @Transactional(readOnly = true)
     public int contarUsuarios(){
@@ -165,13 +132,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return (count != null) ? count : 0;
     }
-
-    /**
-     * Verificar si un usuario existe.
-     * 
-     * @param id ID del usuario a verificar.
-     * @return true si existe, false en caso contrario.
-     */
     @Override
     @Transactional(readOnly = true)
     public boolean existeUsuarioPorId(int id) {

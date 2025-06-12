@@ -2,6 +2,7 @@ package com.technovaperu.technovaperuwebstore.model;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,49 +18,49 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "historial_pedido")
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 @Builder
 public class HistorialPedidoModel {
-    /**
-     * Identificador unico del historial de pedidos.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto Increment
-    private int id;
 
-    /**
-     * Pedido al que se refiere este registro de historial.
-     */
+    // Atributos de la tabla historial_pedido
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador del historial del pedido")
+    private long id;
+
+    // Foreign key
     @ManyToOne
-    @JoinColumn(name = "id_pedido", nullable = false)
+    @JoinColumn(name = "id_pedido")
+    @Schema(description = "Identificador del pedido")
     private PedidoModel pedido;
 
-    /**
-     * Estado en que se encuentra el pedido.
-     */
-    @Column(name = "estado", nullable = false)
-    private String estado;
+    @Column(name = "estado_anterior", length = 50)
+    @Schema(description = "Estado del pedido")
+    private String estadoAnterior;
 
-    /**
-     * Fecha y hora en que se cambia el estado del pedido.
-     */
-    @Column(name = "fecha_estado", nullable = false)
-    private LocalDateTime fecha_estado;
+    @Column(name = "estado_nuevo", length = 50)
+    @Schema(description = "Estado nuevo del pedido")
+    private String estadoNuevo;
 
-    public HistorialPedidoModel(PedidoModel pedido, String estado) {
+    @Column(name = "fecha_cambio")
+    @Schema(description = "Fecha de cambio del estado del pedido")
+    private LocalDateTime fechaCambio;
+
+    @Column(name = "comentario", length = 255)
+    @Schema(description = "Comentario del cambio de estado")
+    private String comentario;
+
+    // Constructor personalizado para la creación de objetos de la tabla historial_pedido
+
+    public HistorialPedidoModel(PedidoModel pedido, String estadoAnterior, String estadoNuevo, String comentario) {
         this.pedido = pedido;
-        this.estado = estado;
+        this.estadoAnterior = estadoAnterior;
+        this.estadoNuevo = estadoNuevo;
+        this.fechaCambio = LocalDateTime.now();
+        this.comentario = comentario;
     }
 
-    /**
-     * Este m todo se ejecuta antes de persistir el objeto en la base de datos.
-     * Establece la fecha de estado a la fecha y hora actual.
-     */
-    @PrePersist
-    public void prePersist() {
-        // Establece la fecha de estado a la fecha y hora actual
-        this.fecha_estado = LocalDateTime.now();
-    }
 }

@@ -1,10 +1,12 @@
 package com.technovaperu.technovaperuwebstore.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +17,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,92 +27,81 @@ import lombok.NoArgsConstructor;
 @Table(name = "pedido")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
+@Data
 public class PedidoModel {
+    // Atributos de la tabla pedido
 
-    /**
-     * Identificador único del pedido.
-     * Es un campo auto-incremental que se utiliza como clave primaria en la tabla 'pedido'.
-     */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto Increment
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador del pedido")
+    private long id;
 
-    /**
-     * Usuario que realizó el pedido.
-     * El pedido se relaciona con un usuario a través de este campo.
-     * El nombre de la columna en la base de datos es 'id_usuario'.
-     */
+    // Foreign key
     @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private UsuarioModel cliente;
+    @JoinColumn(name = "id_usuario")
+    @Schema(description = "Identificador del cliente")
+    private UsuarioModel usuario;
 
-    /**
-     * Fecha en la que se realizó el pedido.
-     * La fecha se almacena en formato LocalDate y se establece automáticamente
-     * al momento de crear el pedido.
-     * El nombre de la columna en la base de datos es 'fecha_pedido'.
-     */
-    @Column(name = "fecha_pedido", nullable = false)
-    private LocalDate fecha_pedido;
+    @Column(name = "fecha_registro")
+    @Schema(description = "Fecha de creación del pedido")
+    private LocalDateTime fechaRegistro;
 
-    /**
-     * Estado actual del pedido.
-     * El estado del pedido puede ser PENDIENTE, ENVIADO o ENTREGADO.
-     * El nombre de la columna en la base de datos es 'estado'.
-     */
-    @Column(name = "estado", nullable = false)
-    private String estado = "PENDIENTE";
-
-    /**
-     * Total del pedido.
-     * El total se almacena en formato BigDecimal y se establece automáticamente
-     * al momento de crear el pedido.
-     * El nombre de la columna en la base de datos es 'total'.
-     */
-    @Column(name = "total", nullable = false, precision = 10, scale = 2)
+    @Column(name = "total", precision = 10, scale = 2)
+    @Schema(description = "Total del pedido")
     private BigDecimal total;
 
-    /**
-     * Dirección de envío del pedido.
-     * La dirección de envío se almacena en un campo de texto y se establece al
-     * momento de crear el pedido.
-     * El nombre de la columna en la base de datos es 'direccion_envio'.
-     */
-    @Column(name = "direccion_envio", nullable = false , length = 255)
-    private String direccion_envio;
+    @Column(name = "subtotal", precision = 10, scale = 2)
+    @Schema(description = "Subtotal del pedido")
+    private BigDecimal subtotal;
 
-    /**
-     * Detalles del pedido.
-     * Un pedido se relaciona con varios detalles a través de este campo.
-     * El nombre de la columna en la base de datos es 'id_pedido'.
-     */
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<DetallePedidoModel> detalles = new ArrayList<>();
+    @Column(name = "impuestos", precision = 10, scale = 2)
+    @Schema(description = "impuestos del pedido")
+    private BigDecimal impuestos;
 
-    /**
-     * Historial de pedidos.
-     * Un pedido se relaciona con varios historiales a través de este campo.
-     * El nombre de la columna en la base de datos es 'id_pedido'.
-     */
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<HistorialPedidoModel> historiales = new ArrayList<>();
+    @Column(name = "metodo_pago", length = 50)
+    @Schema(description = "Metodo de pago del pedido")
+    private String metodoPago;
 
-    public PedidoModel(UsuarioModel cliente, String estado, BigDecimal total, String direccion_envio) {
-        this.cliente = cliente;
-        this.estado = estado;
+    @Column(name = "direccion_entrega", length = 255)
+    @Schema(description = "Direccion de entrega del pedido")
+    private String direccionEntrega;
+
+    @Column(name = "fecha_entrega")
+    @Schema(description = "Fecha de entrega del pedido")
+    private LocalDateTime fechaEntrega;
+
+    @Column(name = "estado", length = 50)
+    @Schema(description = "Estado del pedido, puede ser 'PENDIENTE', 'ENVIADO', 'ENTREGADO', 'CANCELADO'")
+    private String estado;
+
+    @Column(name = "fecha_actualizacion")
+    @Schema(description = "Fecha de actualización del pedido")
+    private LocalDateTime fechaActualizacion;
+
+    // Listas de relaciones
+    @OneToMany(mappedBy = "pedido", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    @Schema(description = "Lista de detalles del pedido")
+    private List<DetallePedidoModel> detalles;
+
+    @OneToMany(mappedBy = "pedido", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    @Schema(description = "Lista de historiales del pedido")
+    private List<HistorialPedidoModel> historiales;
+
+    // Constructor personalizado para la creación de objetos de la tabla pedido
+
+    public PedidoModel(UsuarioModel usuario, BigDecimal total, BigDecimal subtotal, BigDecimal impuestos, String metodoPago, String direccionEntrega) {
+        this.usuario = usuario;
         this.total = total;
-        this.direccion_envio = direccion_envio;
+        this.subtotal = subtotal;
+        this.impuestos = impuestos;
+        this.metodoPago = metodoPago;
+        this.direccionEntrega = direccionEntrega;
+        this.fechaRegistro = LocalDateTime.now();
+        this.fechaActualizacion = LocalDateTime.now();
+        this.estado = "PENDIENTE"; // Por defecto, el estado del pedido es PENDIENTE al crearlo
     }
 
-    /**
-     * Método que se ejecuta antes de persistir el objeto en la base de datos.
-     * Establece la fecha del pedido a la fecha actual.
-     */
-    @PrePersist
-    public void prePersist() {
-        // Establece la fecha del pedido a la fecha actual
-        this.fecha_pedido = LocalDate.now();
-    }
 }

@@ -1,7 +1,6 @@
 package com.technovaperu.technovaperuwebstore.model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -15,8 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,125 +28,63 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ProductoModel {
 
-    /**
-     * Identificador único del producto.
-     * Es un auto-incremental que se va a ir incrementando cada vez que se
-     * cree un nuevo producto.
-     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto Increment
     private int id;
 
-    /**
-     * El proveedor que suministra el producto.
-     */
     @ManyToOne
     @JoinColumn(name = "id_proveedor", nullable = false)
     private ProveedorModel proveedor;
 
-    /**
-     * Las categorías que se relacionan con el producto.
-     */
     @ManyToOne
     @JoinColumn(name = "id_categoria", nullable = false)
     private CategoriaModel categorias;
 
-    /**
-     * El nombre del producto.
-     */
+    @ManyToOne
+    @JoinColumn(name = "id_subcategoria", nullable = false)
+    private SubCategoriaModel subcategorias;
+
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
-    /**
-     * La descripción del producto, que puede tener un
-     * largo indefinido.
-     */
     @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
-    /**
-     * La cantidad de stock disponible del producto.
-     */
-    @Column(name = "stock", nullable = false)
-    private int stock;
 
-    /**
-     * La fecha de registro del producto, que no se puede actualizar.
-     */
-    @Column(name = "fecha_registro", updatable = false, nullable = false)
-    private LocalDateTime fechaRegistro = LocalDateTime.now();
+    @Column(name = "detalles_producto", columnDefinition = "TEXT")
+    private String detalles_producto;
 
-    /**
-     * La fecha de última actualización del producto.
-     */
-    @Column(name = "fecha_actualizacion", nullable = false)
-    private LocalDateTime fechaActualizacion = LocalDateTime.now();
+    @Column(name = "fecha_registro", nullable = false)
+    private LocalDateTime fechaRegistro;
 
-    /**
-     * La galería de imágenes del producto, que se va a mostrar en la vista de
-     * detalles del producto.
-     */
+    @Column(name = "fecha_actualizacion")
+    private LocalDateTime fechaActualizacion;
+
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<ProductolImagenModel> imagenes = new ArrayList<>();
-
-    /**
-     * Los items del carrito que se relacionan con el producto.
-     */
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ItemCarritoModel> items = new ArrayList<>();
-
-    /**
-     * Los comentarios que se relacionan con el producto.
-     */
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ComentarioModel> comentarios = new ArrayList<>();
-
-    /**
-     * Los favoritos que se relacionan con el producto.
-     */
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FavoritoModel> favoritos = new ArrayList<>();
-
-    /**
-     * Los detalles de pedidos que se relacionan con el producto.
-     */
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DetallePedidoModel> detalles = new ArrayList<>();
+    private List<ProductoImagenModel> imagenes;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LoteModel> lotes = new ArrayList<>();
+    private List<ComentarioModel> comentarios;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UnidadMedidaModel> unidades = new ArrayList<>();
+    private List<FavoritoModel> favoritos;
 
-    // Constructor personalizado
-    public ProductoModel(ProveedorModel proveedor, CategoriaModel categorias, String nombre, String descripcion, int stock) {
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LoteModel> lotes;
+
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductoPresentacionModel> presentaciones;
+
+    public ProductoModel(ProveedorModel proveedor, CategoriaModel categorias, SubCategoriaModel subcategorias,
+            String nombre, String descripcion, String detalles_producto, LocalDateTime fechaRegistro,
+            LocalDateTime fechaActualizacion) {
         this.proveedor = proveedor;
         this.categorias = categorias;
+        this.subcategorias = subcategorias;
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.stock = stock;
-    }
-
-    /**
-     * Método que se ejecuta antes de persistir el objeto en la base de datos.
-     * Asigna la fecha actual a las columnas 'fecha_registro' y 'fecha_actualizacion'.
-     */
-    @PrePersist
-    public void prePersist() {
-        // Asigna la fecha actual a la columna 'fecha_registro'
-        this.fechaRegistro = LocalDateTime.now();
-        // Asigna la fecha actual a la columna 'fecha_actualizacion'
-        this.fechaActualizacion = LocalDateTime.now();
-    }
-
-    /**
-     * Método que se ejecuta antes de actualizar un registro en la base de datos.
-     * Asigna la fecha actual a la columna 'fecha_actualizacion'.
-     */
-    @PreUpdate
-    public void actualizarFecha() {
-        // Asigna la fecha actual a la columna 'fecha_actualizacion'
-        this.fechaActualizacion = LocalDateTime.now();
+        this.detalles_producto = detalles_producto;
+        this.fechaRegistro = fechaRegistro;
+        this.fechaActualizacion = fechaActualizacion;
     }
 
 }

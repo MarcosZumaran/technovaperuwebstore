@@ -1,7 +1,9 @@
 package com.technovaperu.technovaperuwebstore.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,57 +25,60 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ItemCarritoModel {
 
-    /**
-     * Identificador numero del item del carrito. Es un numero unico que se
-     * incrementa en cada nuevo item del carrito.
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto Increment
-    private int id;
+    // Atributos de la tabla item_carrito
 
-    /**
-     * El carrito al que se asocia este item. Un item del carrito se asocia
-     * con un solo carrito.
-     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador del item del carrito")
+    private long id;
+
+    // Foreign key
     @ManyToOne
-    @JoinColumn(name = "id_carrito", nullable = false)
+    @JoinColumn(name = "id_carrito")
+    @Schema(description = "Identificador del carrito")
     private CarritoModel carrito;
 
-    /**
-     * El producto asociado a este item del carrito. Un item del carrito se
-     * asocia con un solo producto.
-     */
+    // Foreign key
     @ManyToOne
-    @JoinColumn(name = "id_producto", nullable = false)
-    private ProductoModel producto;
+    @JoinColumn(name = "id_producto_presentacion")
+    @Schema(description = "Identificador del producto")
+    private ProductoPresentacionModel productoPresentacion;
 
-    /**
-     * La cantidad de este item del carrito. La cantidad puede ser 1 o mas.
-     */
-    @Column(name = "cantidad", nullable = false)
-    private int cantidad;
+    @Column(name = "cantidad", precision = 10, scale = 3)
+    @Schema(description = "Cantidad del item del carrito")
+    private BigDecimal cantidad;
 
-    /**
-     * La fecha en que se agreg el item al carrito. La fecha se establece
-     * automaticamente en el momento en que se crea el item del carrito.
-     */
-    @Column(name = "fecha_agregado", nullable = false)
-    private LocalDateTime fecha_agregado;
+    @Column(name = "fecha_agregado")
+    @Schema(description = "Fecha de agregado del item al carrito")
+    private LocalDateTime fechaAgregado;
 
+    @Column(name = "precio_actual", precision = 10, scale = 2)
+    @Schema(description = "Precio actual del item del carrito")
+    private BigDecimal precioActual;
 
-    public ItemCarritoModel(CarritoModel carrito, ProductoModel producto, int cantidad) {
+    @Column(name = "nombre_producto", length = 50)
+    @Schema(description = "Nombre del producto")
+    private String nombreProducto;
+
+    @Column(name = "unidad_medida_presentacion", length = 20)
+    @Schema(description = "Unidad de medida del producto")
+    private String unidadmedidaPresentacion;
+
+    @Column(name = "activo")
+    @Schema(description = "Estado del item del carrito")
+    private boolean activo;
+
+    // Constructor personalizado para la creación de objetos de la tabla item_carrito
+
+    public ItemCarritoModel(CarritoModel carrito, ProductoPresentacionModel productoPresentacion, BigDecimal cantidad, BigDecimal precioActual, String nombreProducto, String unidadmedidaPresentacion) {
         this.carrito = carrito;
-        this.producto = producto;
+        this.productoPresentacion = productoPresentacion;
         this.cantidad = cantidad;
+        this.fechaAgregado = LocalDateTime.now();
+        this.precioActual = precioActual;
+        this.nombreProducto = nombreProducto;
+        this.unidadmedidaPresentacion = unidadmedidaPresentacion;
+        this.activo = true; // Por defecto el item está activo al ser agregado
     }
 
-    /**
-     * Metodo que se ejecuta antes de persistir el objeto en la base de datos.
-     * Establece la fecha de creacion a la fecha y hora actual.
-     */
-    @PrePersist
-    public void prePersist() {
-        // Establece la fecha de creaci n a la fecha y hora actual
-        this.fecha_agregado = LocalDateTime.now();
-    }
 }
