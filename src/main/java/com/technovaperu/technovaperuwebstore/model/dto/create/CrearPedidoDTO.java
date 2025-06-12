@@ -1,43 +1,77 @@
 package com.technovaperu.technovaperuwebstore.model.dto.create;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Data
 public class CrearPedidoDTO {
 
-    @NotNull(message = "El id de usuario no puede ser nulo")
-    @Positive(message = "El id de usuario debe ser mayor que 0")
-    @Schema(description = "ID del usuario que realiza el pedido", example = "1")
-    private int idUsuario;
+    @NotNull(message = "El cliente no puede ser nulo")
+    @Schema(description = "Identificador del cliente", example = "1")
+    private long idUsuario;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Schema(description = "Fecha y hora del pedido", example = "2023-01-01 10:00:00")
-    private LocalDateTime fechaPedido;
+    @Positive(message = "El fecha de creación del pedido no puede ser negativa")
+    @Schema(description = "Fecha de creación del pedido", example = "2023-05-01T00:00:00")
+    private String fechaRegistro;
 
-    @Schema(description = "Estado actual del pedido", example = "PENDIENTE")
+    @Positive(message = "El estado del pedido no puede ser negativo")
+    @Schema(description = "Estado del pedido", example = "1")
     private String estado;
 
-    @Schema(description = "Monto total del pedido", example = "1299.99")
+    @Positive(message = "El total del pedido no puede ser negativo")
+    @Schema(description = "Total del pedido", example = "3.99")    
     private BigDecimal total;
 
-    @NotBlank(message = "La dirección de envío no puede estar vacía")
-    @Size(max = 255, message = "La dirección de envío no puede exceder 255 caracteres")
-    @Schema(description = "Dirección de entrega del pedido", example = "Av. Principal 123, Lima")
-    private String direccionEnvio;
+    @Positive(message = "El subtotal del pedido no puede ser negativo")
+    @Schema(description = "Subtotal del pedido", example = "3.99")    
+    private BigDecimal subtotal;
+
+    @Positive(message = "El descuento del pedido no puede ser negativo")
+    @Schema(description = "Descuento del pedido", example = "3.99")    
+    private BigDecimal descuento;
+
+    @Positive(message = "El impuestos del pedido no puede ser negativo")
+    @Schema(description = "Impuestos del pedido", example = "3.99")    
+    private BigDecimal impuestos;
+
+    @Positive(message = "El metodo de pago del pedido no puede ser negativo")
+    @Schema(description = "Metodo de pago del pedido", example = "1")    
+    private String metodoPago;
+
+    @Positive(message = "El direccion de entrega del pedido no puede ser negativo")
+    @Schema(description = "Direccion de entrega del pedido", example = "1")    
+    private String direccionEntrega;
+
+    @Positive(message = "La fecha de confirmacion del pedido no puede ser negativa")
+    @Schema(description = "Fecha de confirmacion del pedido", example = "2023-05-01T00:00:00")    
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime fechaConfirmacion;
+
+    @Positive(message = "La fecha de entrega del pedido no puede ser negativa")
+    @Schema(description = "Fecha de entrega del pedido", example = "2023-05-01T00:00:00")   
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") 
+    private LocalDateTime fechaEntrega;
+
+    @Positive(message = "La cancelado del pedido no puede ser negativa")
+    @Schema(description = "Cancelado del pedido", example = "1")    
+    private boolean cancelado;
+
+    @Positive(message = "La fecha de cancelacion del pedido no puede ser negativa")
+    @Schema(description = "Fecha de cancelacion del pedido", example = "2023-05-01T00:00:00")   
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime fechaCancelacion;
+    
 }

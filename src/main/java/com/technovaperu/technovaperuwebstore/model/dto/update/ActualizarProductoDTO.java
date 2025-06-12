@@ -1,14 +1,10 @@
 package com.technovaperu.technovaperuwebstore.model.dto.update;
 
-import java.math.BigDecimal;
+
+import org.hibernate.validator.constraints.Length;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,36 +16,23 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ActualizarProductoDTO {
 
-    @NotNull(message = "El id de proveedor no puede estar vacío")
-    @Positive(message = "El id de proveedor debe ser mayor que 0")
-    @Schema(description = "ID del proveedor del producto", example = "1")
-    private int idProveedor;
-
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no debe exceder los 100 caracteres")
-    @Schema(description = "Nombre del producto", example = "Smartphone XYZ")
+    @Length(min = 3, max = 50, message = "El nombre del producto debe tener entre 3 y 50 caracteres")
+    @Schema(description = "Nombre del producto", example = "Mesa")
     private String nombre;
 
-    @NotBlank(message = "La descripción no puede estar vacía")
-    @Size(max = 255, message = "La descripción no debe exceder los 255 caracteres")
-    @Schema(description = "Descripción del producto", example = "Este es un smartphone de alta calidad")
+    @Length(min = 3, max = 255, message = "La descripción del producto debe tener entre 3 y 255 caracteres") 
+    @Schema(description = "Descripción del producto", example = "Una mesa de madera")
     private String descripcion;
 
-    @NotNull(message = "El precio no puede estar vacío")
-    @Positive(message = "El precio debe ser mayor que 0")
-    @Schema(description = "Precio del producto", example = "100.99")
-    private BigDecimal precio;
+    @Positive(message = "El id de la categoria no puede ser negativo")
+    @Schema(description = "Identificador de la categoria", example = "1")
+    private long idCategoria;
 
-    @Null
-    @Positive(message = "El descuento debe ser mayor o igual que 0")
-    @Schema(description = "Descuento del producto", example = "10")
-    private BigDecimal descuento;
+    @Length(min = 3, max = 20, message = "El estado del producto debe tener entre 3 y 20 caracteres")
+    @Schema(description = "Estado del producto", example = "1")
+    private String estado;
 
-    @NotNull(message = "El stock no puede estar vacío")
-    @PositiveOrZero(message = "El stock debe ser mayor o igual que 0")
-    @Schema(description = "Cantidad disponible en inventario", example = "100")
-    private int stock;
-    
-    @Schema(description = "Indica si el producto esta activo o no", example = "true")
-    private Boolean activo;
+    @Schema(description = "Detalles del producto", example = "Detalles del producto xD")
+    private String detalles_producto;
+
 }

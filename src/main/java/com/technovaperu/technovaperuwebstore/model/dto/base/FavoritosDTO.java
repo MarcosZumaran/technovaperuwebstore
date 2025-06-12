@@ -34,4 +34,5 @@ public class FavoritosDTO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Schema(description = "Fecha y hora de agregado al favorito", example = "2023-01-01 10:00:00")
     private LocalDateTime fechaAgregado;
+    
 }

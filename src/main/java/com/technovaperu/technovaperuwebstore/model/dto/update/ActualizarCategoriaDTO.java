@@ -1,25 +1,25 @@
 package com.technovaperu.technovaperuwebstore.model.dto.update;
 
+import org.hibernate.validator.constraints.Length;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Data
 public class ActualizarCategoriaDTO {
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(min = 2, max = 100, message = "El nombre debe tener entre 2 y 100 caracteres")
-    @Schema(description = "Nombre de la categoría", example = "Laptops")
+
+    @Length(min = 3, max = 50, message = "El nombre de la categoria debe tener entre 3 y 50 caracteres")
+    @Schema(description = "Nombre de la categoria")
     private String nombre;
-    
-    @NotBlank(message = "La descripción no puede estar vacía")
-    @Size(max = 255, message = "La descripción no puede exceder 255 caracteres")
-    @Schema(description = "Descripción de la categoría", example = "Laptops de alta calidad")
+
+    @Length(min = 3, max = 160, message = "La descripción de la categoria debe tener entre 3 y 160 caracteres")
+    @Schema(description = "Descripción de la categoria")
     private String descripcion;
+    
 }

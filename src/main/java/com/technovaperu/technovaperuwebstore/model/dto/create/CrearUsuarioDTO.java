@@ -2,48 +2,43 @@ package com.technovaperu.technovaperuwebstore.model.dto.create;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder    
 @Data
-@Builder
 public class CrearUsuarioDTO {
 
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
-    @Schema(description = "Nombre del usuario", example = "Juan")
+    @NotNull(message = "El nombre del usuario no puede estar en blanco")
+    @Schema(description = "Nombre del usuario", example = "Mesa")
     private String nombre;
 
-    @NotBlank(message = "El apellido no puede estar vacío")
-    @Size(max = 100, message = "El apellido no puede exceder 100 caracteres")
-    @Schema(description = "Apellido del usuario", example = "Pérez")
+    @NotNull(message = "El apellido del usuario no puede estar en blanco")
+    @Schema(description = "Apellido del usuario", example = "Arbelas")
     private String apellido;
 
-    @NotBlank(message = "El correo electrónico no puede estar vacío")
-    @Size(max = 255, message = "El correo electrónico no puede exceder 255 caracteres")
-    @Email(message = "El formato del email no es válido")
-    @Schema(description = "Correo electrónico del usuario", example = "juan.perez@ejemplo.com")
-    private String email;
+    @NotNull(message = "El correo del usuario no puede estar en blanco")
+    @Schema(description = "Correo electrónico del usuario", example = "mesa@gmail.com")
+    private String correo;
 
-    @NotBlank(message = "La direccion no puede estar vacía")
-    @Size(max = 255, message = "La direccion no puede exceder 255 caracteres")
-    @Schema(description = "Dirección del usuario", example = "Av. Principal 123")
-    private String direccion;
-
-    @NotBlank(message = "El telefono no puede estar vacío")
-    @Size(max = 20, message = "El telefono no puede exceder 20 caracteres")
-    @Schema(description = "Teléfono del usuario", example = "999888777")
+    @NotNull(message = "El telefono del usuario no puede estar en blanco")
+    @Pattern(regexp = "^[0-9]{9,20}$", message = "El teléfono debe tener entre 9 y 20 dígitos")
+    @Schema(description = "Telefono del usuario", example = "1234567890")
     private String telefono;
 
-    @NotBlank(message = "La contraseña no puede estar vacía")
-    @Size(min = 8,  max = 255, message = "La contraseña debe tener minimo 8 caracteres y no puede exceder 255")
-    @Schema(description = "Contraseña del usuario", example = "12345678")
-    private String password;
+    @NotNull(message = "La clave del usuario no puede estar en blanco")
+    @Schema(description = "Clave del usuario", example = "906533211")
+    private String clave;
+
+    @NotNull(message = "El rol del usuario no puede estar en blanco")
+    @Schema(description = "Rol del usuario", example = "cliente")
+    private String rol;
+
 }

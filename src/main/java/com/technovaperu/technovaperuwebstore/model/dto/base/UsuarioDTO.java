@@ -2,12 +2,12 @@ package com.technovaperu.technovaperuwebstore.model.dto.base;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,51 +16,52 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder    
 @Data
-@Builder
-@Schema(description = "DTO para operaciones con usuarios")
 public class UsuarioDTO {
-    
-    @Schema(description = "ID único del usuario", example = "1")
-    private int id;
 
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
-    @Schema(description = "Nombre del usuario", example = "Juan")
+    @Positive(message = "El id del usuario no puede ser negativo")
+    @NotNull(message = "El id del usuario no puede estar en blanco")
+    @Schema(description = "Identificador del usuario", example = "1")
+    private long id;
+
+    @NotBlank(message = "El nombre del usuario no puede estar en blanco")
+    @Schema(description = "Nombre del usuario", example = "Mesa")
     private String nombre;
-    
-    @NotBlank(message = "El apellido no puede estar vacío")
-    @Size(max = 100, message = "El apellido no puede exceder 100 caracteres")
-    @Schema(description = "Apellido del usuario", example = "Pérez")
+
+    @NotBlank(message = "El apellido del usuario no puede estar en blanco")
+    @Schema(description = "Apellido del usuario", example = "Arbelas")
     private String apellido;
 
-    @NotBlank(message = "El email no puede estar vacío")
-    @Email(message = "El formato del email no es válido")
-    @Size(max = 255, message = "El email no puede exceder 255 caracteres")
-    @Schema(description = "Correo electrónico del usuario", example = "juan.perez@ejemplo.com")
-    private String email;
+    @NotBlank(message = "El correo del usuario no puede estar en blanco")
+    @Email(message = "El correo no es válido")
+    @Schema(description = "Correo electrónico del usuario", example = "mesa@gmail.com")
+    private String correo;
 
-    @NotBlank(message = "La contraseña no puede estar vacía")
-    @Size(max = 255, message = "La contraseña no puede exceder 255 caracteres")
-    @Schema(description = "Contraseña del usuario", example = "123456")
-    private String password;
-
-    @NotBlank(message = "La dirección no puede estar vacía")
-    @Size(max = 255, message = "La dirección no puede exceder 255 caracteres")
-    @Schema(description = "Dirección del usuario", example = "Av. Principal 123")
-    private String direccion;
-
-    @NotBlank(message = "El teléfono no puede estar vacío")
+    @NotBlank(message = "El telefono del usuario no puede estar en blanco")
     @Pattern(regexp = "^[0-9]{9,20}$", message = "El teléfono debe tener entre 9 y 20 dígitos")
-    @Size(max = 20, message = "El teléfono no puede exceder 20 caracteres")
-    @Schema(description = "Teléfono del usuario", example = "999888777")
+    @Schema(description = "Telefono del usuario", example = "1234567890")
     private String telefono;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Schema(description = "Fecha de registro del usuario", example = "2023-01-01 10:00:00")
+    @NotBlank(message = "La clave del usuario no puede estar en blanco")
+    @Size(min = 8, max = 50, message = "La clave debe tener entre 8 y 50 caracteres")
+    @Schema(description = "Clave del usuario", example = "906533211")
+    private String clave;
+
+    @NotBlank(message = "El rol del usuario no puede estar en blanco")
+    @Schema(description = "Rol del usuario", example = "cliente")
+    private String rol;
+
+    @NotNull(message = "El fecha de creación del usuario no puede estar en blanco")
+    @Schema(description = "Fecha de creación del usuario", example = "2023-05-01T00:00:00")
     private LocalDateTime fechaRegistro;
+
+    @NotNull(message = "El fecha de actualización del usuario no puede estar en blanco")
+    @Schema(description = "Fecha de actualización del usuario", example = "2023-05-01T00:00:00")
+    private LocalDateTime fechaActualizacion;
+
+    @NotNull(message = "El estado del usuario no puede estar en blanco")
+    @Schema(description = "Estado del usuario", example = "true")
+    private boolean activo;
     
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Schema(description = "Fecha de última modificación", example = "2023-01-15 15:30:00")
-    private LocalDateTime fechaModificacion;
 }

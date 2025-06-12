@@ -3,59 +3,57 @@ package com.technovaperu.technovaperuwebstore.model.dto.base;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.validator.constraints.Length;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Schema(description = "DTO para operaciones con productos")
+@Data
 public class ProductoDTO {
-    
-    @Schema(description = "ID único del producto", example = "1")
-    private int id;
 
-    @NotNull(message = "El id de proveedor no puede ser nulo")
-    @Positive(message = "El id de proveedor debe ser mayor que 0")
-    @Schema(description = "ID del proveedor del producto", example = "1")
-    private int idProveedor;
+    @Positive(message = "El id del producto no puede ser negativo")
+    @Schema(description = "Identificador del producto", example = "1")
+    private long id;
 
-    @NotNull(message = "El id de categoria no puede ser nulo")
-    @Positive(message = "El id de categoria debe ser mayor que 0")
-    @Schema(description = "ID de la categoria al que pertenece el producto", example = "1")
-    private int idCategoria;
-
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres") 
-    @Schema(description = "Nombre del producto", example = "Smartphone XYZ")
+    @NotBlank(message = "El nombre del producto no puede estar en blanco")
+    @Length(min = 3, max = 50, message = "El nombre del producto debe tener entre 3 y 50 caracteres")
+    @Schema(description = "Nombre del producto", example = "Mesa")
     private String nombre;
 
-    @NotBlank(message = "La descripción no puede estar vacía")
-    @Size(max = 255, message = "La descripción no puede exceder 255 caracteres") 
-    @Schema(description = "Descripción del producto", example = "Smartphone de última generación con 8GB RAM y 128GB almacenamiento")
+    @NotBlank(message = "La descripción del producto no puede estar en blanco")
+    @Length(min = 3, max = 255, message = "La descripción del producto debe tener entre 3 y 255 caracteres") 
+    @Schema(description = "Descripción del producto", example = "Una mesa de madera")
     private String descripcion;
 
-    @NotNull(message = "El stock no puede ser nulo")
-    @PositiveOrZero(message = "El stock debe ser mayor o igual que 0")
-    @Schema(description = "Cantidad disponible en inventario", example = "100")
-    private int stock;
+    @Positive(message = "El id de la categoria no puede ser negativo")
+    @Schema(description = "Identificador de la categoria", example = "1")
+    private long idCategoria;
+
+    @NotBlank(message = "El material del producto no puede estar en blanco")
+    @Length(min = 3, max = 20, message = "El estado del producto debe tener entre 3 y 20 caracteres")
+    @Schema(description = "Estado del producto", example = "1")
+    private String estado;
+
+    @NotBlank(message = "El detalles del producto no puede estar en blanco")
+    @Schema(description = "Detalles del producto", example = "Detalles del producto xD")
+    private String detalles_producto;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Schema(description = "Fecha de registro del producto", example = "2023-01-01 10:00:00")
+    @Schema(description = "Fecha de creación del producto", example = "2023-05-01T00:00:00")
     private LocalDateTime fechaRegistro;
-    
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Schema(description = "Fecha de última actualización", example = "2023-01-15 15:30:00")
+    @Schema(description = "Fecha de actualización del producto", example = "2023-05-01T00:00:00")
     private LocalDateTime fechaActualizacion;
+    
 }

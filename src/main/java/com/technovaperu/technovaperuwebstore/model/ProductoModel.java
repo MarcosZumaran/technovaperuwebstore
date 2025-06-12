@@ -3,7 +3,7 @@ package com.technovaperu.technovaperuwebstore.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,10 +40,6 @@ public class ProductoModel {
     @JoinColumn(name = "id_categoria", nullable = false)
     private CategoriaModel categorias;
 
-    @ManyToOne
-    @JoinColumn(name = "id_subcategoria", nullable = false)
-    private SubCategoriaModel subcategorias;
-
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
@@ -52,6 +48,10 @@ public class ProductoModel {
 
     @Column(name = "detalles_producto", columnDefinition = "TEXT")
     private String detalles_producto;
+
+    @Column(name = "estado", length = 20)
+    @Schema(description = "Estado del producto, DISPONIBLE o NO DISPONIBLE", example = "DISPONIBLE")
+    private String estado;
 
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro;
@@ -74,12 +74,11 @@ public class ProductoModel {
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductoPresentacionModel> presentaciones;
 
-    public ProductoModel(ProveedorModel proveedor, CategoriaModel categorias, SubCategoriaModel subcategorias,
+    public ProductoModel(ProveedorModel proveedor, CategoriaModel categorias,
             String nombre, String descripcion, String detalles_producto, LocalDateTime fechaRegistro,
             LocalDateTime fechaActualizacion) {
         this.proveedor = proveedor;
         this.categorias = categorias;
-        this.subcategorias = subcategorias;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.detalles_producto = detalles_producto;

@@ -3,35 +3,42 @@ package com.technovaperu.technovaperuwebstore.model.dto.update;
 import java.math.BigDecimal;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@Data
 public class ActualizarDetallePedidoDTO {
-    @NotNull(message = "El id de pedido no puede estar vacío")
-    @Positive(message = "El id de pedido debe ser mayor que 0")
-    @Schema(description = "ID del pedido al que pertenece el detalle", example = "1")
-    private int idPedido;
 
-    @NotNull(message = "El id de producto no puede estar vacío")
-    @Positive(message = "El id de producto debe ser mayor que 0")
-    @Schema(description = "ID del producto al que pertenece el detalle", example = "1")
-    private int idProducto;
+    @Positive(message = "El id del producto_presentacion no puede ser negativo")
+    @Schema(description = "Identificador del producto_presentacion", example = "1")
+    private Long idProductoPresentacion;
 
-    @NotNull(message = "El id de unidad de medida no puede estar vacío")
-    @Positive(message = "El id de unidad de medida debe ser mayor que 0")
-    @Schema(description = "ID de la unidad de medida al que pertenece el detalle", example = "1")
-    private int cantidad;
+    @Positive(message = "El id del lote no puede ser negativo")
+    @Schema(description = "Identificador del lote", example = "1")
+    private Long idLote;
 
-    @NotNull(message = "El precio unitario no puede ser nulo")
-    @Positive(message = "El precio unitario debe ser mayor o igual que 0")
-    @Schema(description = "Precio unitario del detalle", example = "3.99")
+    @Positive(message = "La cantidad del detalle del pedido no puede ser negativa")
+    @Schema(description = "Cantidad del detalle del pedido", example = "3.99")
+    private BigDecimal cantidad;
+
+    @Positive(message = "El precio unitario del detalle del pedido no puede ser negativo")
+    @Schema(description = "Precio unitario del detalle del pedido", example = "3.99")
     private BigDecimal precioUnitario;
+
+    @Positive(message = "El precio total del detalle del pedido no puede ser negativo")
+    @Schema(description = "Precio total del detalle del pedido", example = "3.99")
+    private BigDecimal subTotal;
+
+    @Schema(description = "Nombre del producto", example = "Producto 1")
+    private String nombreProducto;
+
+    @Schema(description = "Unidad de medida del producto", example = "DOC")
+    private String unidadmedidaPresentacion;
+    
 }

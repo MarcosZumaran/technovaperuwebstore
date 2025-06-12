@@ -1,44 +1,71 @@
 package com.technovaperu.technovaperuwebstore.model.dto.base;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.validator.constraints.Length;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder    
+@Data
 public class ProveedorDTO {
 
-    @Schema(description = "ID único del proveedor", example = "1")
-    private int id;
+    @Positive(message = "El id del proveedor no puede ser negativo")
+    @NotNull(message = "El id del proveedor no puede estar en blanco")
+    @Schema(description = "Identificador del proveedor", example = "1")
+    private long id;
 
-    @NotBlank(message = "El nombre no puede estar vacío")
-    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
-    @Schema(description = "Nombre del proveedor", example = "Empresa XYZ")
-    private String nombre;
+    @NotBlank(message = "El nombre del proveedor no puede estar en blanco")
+    @Length(min = 3, max = 50, message = "El nombre del proveedor debe tener entre 3 y 50 caracteres")
+    @Schema(description = "Nombre del proveedor", example = "Mesa")
+    private String nombreEmpresa;
 
-    @NotBlank(message = "La direccion no puede estar vacía")
-    @Size(max = 255, message = "La direccion no puede exceder 255 caracteres")
-    @Schema(description = "Direccion del proveedor", example = "Calle 123, Ciudad de Los Santos, San Andreas")
+    @NotBlank(message = "La RUC del proveedor no puede estar en blanco")
+    @Length(min = 10, max = 13, message = "El RUC del proveedor debe tener entre 10 y 13 caracteres")
+    @Schema(description = "RUC del proveedor", example = "12345678901")
+    private String ruc;
+
+    @NotBlank(message = "La dirección del proveedor no puede estar en blanco")
+    @Length(min = 3, max = 100, message = "La dirección del proveedor debe tener entre 3 y 100 caracteres")
+    @Schema(description = "Dirección del proveedor", example = "Calle 123")
     private String direccion;
 
-    @NotBlank(message = "El telefono no puede estar vacío")
-    @Size(max = 20, message = "El telefono no puede exceder 20 caracteres")
-    @Schema(description = "Telefono del proveedor", example = "+519876543210")
+    @NotBlank(message = "El telefono del proveedor no puede estar en blanco")
+    @Length(min = 9, max = 20, message = "El telefono del proveedor debe tener entre 9 y 20 caracteres")
+    @Pattern(regexp = "^[0-9]{9,20}$", message = "El teléfono debe tener entre 9 y 20 dígitos")
+    @Schema(description = "Telefono del proveedor", example = "1234567890")
     private String telefono;
 
-    @NotBlank(message = "El email no puede estar vacío")
-    @Size(max = 255, message = "El email no puede exceder 255 caracteres")
-    @Schema(description = "Email del proveedor", example = "empresa@xyz.com")
-    private String email;
+    @NotBlank(message = "La correo electrónico del proveedor no puede estar en blanco")
+    @Email(message = "El correo no es válido")
+    @Length(min = 5, max = 100, message = "El correo del proveedor debe tener entre 5 y 100 caracteres")
+    @Schema(description = "Correo electrónico del proveedor", example = "proveedor@gmail.com")
+    private String correo;
 
-    @NotBlank(message = "El pais no puede estar vacío")
-    @Size(max = 100, message = "El pais no puede exceder 100 caracteres")
-    @Schema(description = "Pais del proveedor", example = "EEUU")
-    private String pais;
+    @NotNull(message = "El fecha de creación del proveedor no puede estar en blanco")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Fecha de creación del proveedor", example = "2023-05-01T00:00:00")
+    private LocalDateTime fechaRegistro;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Fecha de actualización del proveedor", example = "2023-05-01T00:00:00")
+    private LocalDateTime fechaActualizacion;
+
+    @NotNull(message = "El estado del proveedor no puede estar en blanco")
+    @Schema(description = "Estado del proveedor", example = "true")
+    private boolean activo;
+    
 }

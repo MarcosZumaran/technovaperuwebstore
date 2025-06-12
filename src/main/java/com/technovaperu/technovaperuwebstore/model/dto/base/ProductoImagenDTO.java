@@ -1,7 +1,6 @@
 package com.technovaperu.technovaperuwebstore.model.dto.base;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -9,24 +8,26 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Data
 public class ProductoImagenDTO {
 
-    @Schema(description = "ID único de la imagen", example = "1")
-    private int id;
+    @Positive(message = "El id del producto imagen no puede ser negativo")
+    @Schema(description = "Identificador del producto imagen", example = "1")
+    private long id;
 
-    @NotNull(message = "El id de producto no puede estar vacío")
-    @Positive(message = "El id de producto debe ser mayor que 0")
-    @Schema(description = "ID del producto al que pertenece la imagen", example = "1")
-    private int idProducto;
-    
-    @NotBlank(message = "El url no puede estar vacío")
-    @Schema(description = "URL de la imagen", example = "https://example.com/imagen.jpg")
+    @NotNull(message = "El producto no puede ser nulo")
+    @Schema(description = "Identificador del producto", example = "1")
+    private long idProducto;
+
+    @NotNull(message = "El url del producto imagen no puede ser nulo")
+    @Schema(description = "Url del producto imagen", example = "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png")
     private String url;
-    
-    @Schema(description = "Tipo de la imagen", example = "PORTADA")
+
+    @NotNull(message = "El tipo del producto imagen no puede ser nulo")
+    @Schema(description = "Tipo del producto imagen", example = "imagen")
     private String tipo;
+    
 }
