@@ -43,7 +43,7 @@ public class ProductoModel {
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
-    @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "descripcion", nullable = false, length = 255)
     private String descripcion;
 
     @Column(name = "marca", length = 50)
