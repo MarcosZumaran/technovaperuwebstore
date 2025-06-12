@@ -25,7 +25,7 @@ public class ComentarioModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto Increment
-    private int id;
+    private long id;
 
     @ManyToOne
     @JoinColumn(name = "id_usuario", nullable = false)

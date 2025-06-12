@@ -2,10 +2,15 @@ package com.technovaperu.technovaperuwebstore.implement;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,13 +18,13 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.UsuarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearUsuarioDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarUsuarioDTO;
 import com.technovaperu.technovaperuwebstore.services.UsuarioService;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
 /**
  * Implementación de la interfaz {@link UsuarioService} que utiliza JDBC para acceder a la base de datos.
@@ -28,116 +33,188 @@ import com.technovaperu.technovaperuwebstore.services.UsuarioService;
  */
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
-    
-    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public UsuarioServiceImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<UsuarioDTO> usuarioRowMapper = (rs, rowNum) -> UsuarioDTO.builder()
-            .id(rs.getInt("id"))
+    private static final Logger log = LoggerFactory.getLogger(UsuarioServiceImpl.class);
+
+    private final RowMapper<UsuarioDTO> rowMapper = (rs, rowNum) -> UsuarioDTO.builder()
+            .id(rs.getLong("id"))
             .nombre(rs.getString("nombre"))
             .apellido(rs.getString("apellido"))
-            .email(rs.getString("email"))
-            .password(rs.getString("password"))
-            .direccion(rs.getString("direccion"))
+            .correo(rs.getString("correo"))
             .telefono(rs.getString("telefono"))
+            .clave(rs.getString("clave"))
+            .rol(rs.getString("rol"))
+            .activo(rs.getBoolean("activo"))
+            .fechaRegistro(rs.getTimestamp("fecha_registro").toLocalDateTime())
+            .fechaActualizacion(rs.getTimestamp("fecha_actualizacion").toLocalDateTime())
             .build();
     
-
-    @Override 
-    @Transactional(readOnly = true)
-    public List<UsuarioDTO> obtenerTodosLosUsuarios(int pagina){
-        if (pagina <= 0) pagina = 1;
-        int offset = (pagina - 1) * 10;
-        int limit = 10;
-        String sql = "SELECT * FROM usuario ORDER BY id DESC LIMIT ? OFFSET ?";
-        return jdbcTemplate.query(sql, usuarioRowMapper, limit, offset);
-    }
-
-    @Override 
-    @Transactional(readOnly = true)
-    public UsuarioDTO obtenerUsuarioPorId(int id){
-        try {
-            String sql = "SELECT * FROM usuario WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, usuarioRowMapper, id);
+    private List<UsuarioDTO> ejecutarConsultaListaUsuarios(String sql, Object... parametros) {
+        try{
+            log.info("Ejecutando consulta: {}", sql);            
+            return jdbcTemplate.query(sql, rowMapper, parametros);
         } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("Usuario", "id", id);
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Usuarios", "filtro aplicado", null);
         }
     }
 
-    @Override 
-    @Transactional
-    public UsuarioDTO crearUsuario(CrearUsuarioDTO usuario){
-        String sql = "INSERT INTO usuario (nombre, apellido, email, direccion, telefono, contrasena, rol) VALUES(?, ?, ?, ?, ?, ?, ?)";
+    @Override
+    public List<UsuarioDTO> obtenerUsuarios(int pagina){
+        return ejecutarConsultaListaUsuarios("SELECT * FROM usuario LIMIT 10 OFFSET ?", pagina);
+    }
+
+    @Override
+    public List<UsuarioDTO> obtenerUsuariosPorNombre(int pagina, String nombre){
+        return ejecutarConsultaListaUsuarios("SELECT * FROM usuario WHERE nombre = ? LIMIT 10 OFFSET ?", nombre, pagina);
+    }
+    
+    @Override
+    public List<UsuarioDTO> obtenerUsuariosPorRol(int pagina, String rol){
+        return ejecutarConsultaListaUsuarios("SELECT * FROM usuario WHERE rol = ? LIMIT 10 OFFSET ?", rol, pagina);
+    }
+
+    @Override
+    public List<UsuarioDTO> obtenerTodosLosUsuarios(){
+        return ejecutarConsultaListaUsuarios("SELECT * FROM usuario");
+    }
+
+    @Override
+    public List<UsuarioDTO> obtenerTodosLosUsuarioPorNombre(String nombre){
+        return ejecutarConsultaListaUsuarios("SELECT * FROM usuario WHERE nombre = ?", nombre);
+    }
+
+    @Override
+    public List<UsuarioDTO> obtenerTodosLosUsuariosPorRol(String rol){
+        return ejecutarConsultaListaUsuarios("SELECT * FROM usuario WHERE rol = ?", rol);
+    }
+
+    @Override
+    public UsuarioDTO obtenerUsuarioPorId(long id){
+        try{
+            log.info("Ejecutando consulta: SELECT * FROM usuario WHERE id = {}", id);            
+            return jdbcTemplate.queryForObject("SELECT * FROM usuario WHERE id = ?", rowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Usuarios", "filtro aplicado", null);
+        }
+    }
+
+    @Override
+    public UsuarioDTO obtenerusuarioPorCredenciales(String correo, String clave){
+        try{
+            log.info("Ejecutando consulta: SELECT * FROM usuario WHERE correo = ? AND clave = ?", correo, clave);            
+            return jdbcTemplate.queryForObject("SELECT * FROM usuario WHERE correo = ? AND clave = ?", rowMapper, correo, clave);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Usuarios", "filtro aplicado", null);
+        }
+    }
+
+    @Override
+    public UsuarioDTO crearUsuario(CrearUsuarioDTO usuarioDTO){
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("nombre", usuarioDTO.getNombre());
+        fields.put("apellido", usuarioDTO.getApellido());
+        fields.put("correo", usuarioDTO.getCorreo());
+        fields.put("telefono", usuarioDTO.getTelefono());
+        fields.put("clave", usuarioDTO.getClave());
+        fields.put("rol", usuarioDTO.getRol());
+        fields.put("activo", true);
+        fields.put("fecha_registro", Timestamp.valueOf(LocalDateTime.now()));
+        fields.put("fecha_actualizacion", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildInsertSql("usuario", fields);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, usuario.getNombre());
-            ps.setString(2, usuario.getApellido());
-            ps.setString(3, usuario.getEmail());
-            ps.setString(4, usuario.getDireccion());
-            ps.setString(5, usuario.getTelefono());
-            ps.setString(6, usuario.getPassword());
+        log.info("Creando usuario con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
 
         Number key = keyHolder.getKey();
         if (key == null) {
-            throw new RuntimeException("No se pudo obtener el ID generado para el usuario");
+            log.error("Error al crear el usuario, clave generada es nula");
+            throw new RecursoNoEncontradoException("Usuarios", "filtro aplicado", null);
         }
+        return obtenerUsuarioPorId(key.longValue());
 
-        Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
-
-        return UsuarioDTO.builder()
-                .id(id)
-                .nombre(usuario.getNombre())
-                .apellido(usuario.getApellido())
-                .email(usuario.getEmail())
-                .password(usuario.getPassword())
-                .direccion(usuario.getDireccion())
-                .telefono(usuario.getTelefono())
-                .fechaRegistro(LocalDateTime.now())
-                .fechaModificacion(LocalDateTime.now())
-                .build();
-    }
-    
-    @Override 
-    @Transactional
-    public void actualizarUsuario(int id, ActualizarUsuarioDTO usuario){
-        if (!existeUsuarioPorId(id)) {
-            throw new RecursoNoEncontradoException("Usuario", "id", id);
-        }
-        String sql = "UPDATE usuario SET nombre = ?, apellido = ?, email = ?, direccion = ?, telefono = ?, contrasena = ?, rol = ? WHERE id = ?";
-        jdbcTemplate.update(sql, usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getDireccion(), usuario.getTelefono(), usuario.getContrasena(), id);
     }
 
-    @Override 
-    @Transactional
-    public void eliminarUsuario(int id){
-        if (!existeUsuarioPorId(id)) {
-            throw new RecursoNoEncontradoException("Usuario", "id", id);
+    @Override
+    public void actualizarUsuario(long id, ActualizarUsuarioDTO usuarioDTO){
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        if (usuarioDTO.getNombre() != null) {
+            fields.put("nombre", usuarioDTO.getNombre());
         }
-        String sql = "DELETE FROM usuario WHERE id = ?";
+        if (usuarioDTO.getApellido() != null) {
+            fields.put("apellido", usuarioDTO.getApellido());
+        }
+        if (usuarioDTO.getCorreo() != null) {
+            fields.put("correo", usuarioDTO.getCorreo());
+        }
+        if (usuarioDTO.getTelefono() != null) {
+            fields.put("telefono", usuarioDTO.getTelefono());
+        }
+        if (usuarioDTO.getRol() != null) {
+            fields.put("rol", usuarioDTO.getRol());
+        }
+        if (usuarioDTO.getActivo() != null) {
+            fields.put("activo", usuarioDTO.getActivo());
+        }
+        if (fields.isEmpty()) {
+            log.error("No se proporcionaron campos para actualizar el usuario");
+            return;
+        }
+
+        fields.put("fecha_actualizacion", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildUpdateSql("usuario", fields, "id = ?");
+
+        Object[] params = Stream.concat(fields.values().stream(), Stream.of(id)).toArray();
+
+        jdbcTemplate.update(sql, params);
+    }
+
+    @Override
+    public void cambiarClave(long id, String nuevaClave){
+        String sql = "UPDATE usuario SET clave = ? WHERE id = ?";
+        jdbcTemplate.update(sql, nuevaClave, id);
+    }
+
+    @Override
+    public void borrarUsuario(long id){
+
+        if(!existeUsuario(id)){
+            log.error("Usuario con ID {} no encontrado", id);
+            throw new RecursoNoEncontradoException("Usuarios", "filtro aplicado", String.valueOf(id));
+        }
+
+        log.info("Borrando usuario con ID: {}", id);
+
+        String sql = DynamicSqlBuilder.buildDeleteSql("usuario", "id = ?");
         jdbcTemplate.update(sql, id);
     }
 
-    @Override 
-    @Transactional(readOnly = true)
-    public int contarUsuarios(){
-        String sql = "SELECT COUNT(id) FROM usuario";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
-    }
     @Override
-    @Transactional(readOnly = true)
-    public boolean existeUsuarioPorId(int id) {
-        String sql = "SELECT COUNT(id) FROM usuario WHERE id = ?";
+    public boolean existeUsuario(long id){
+        String sql = DynamicSqlBuilder.buildCountSql("usuario", "id = ?");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
+    
 }
-

@@ -1,7 +1,16 @@
 package com.technovaperu.technovaperuwebstore.implement;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,17 +18,14 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.CategoriaDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearCategoriaDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarCategoriaDTO;
 import com.technovaperu.technovaperuwebstore.services.CategoriaService;
-
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.util.Objects;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
 @Service
 public class CategoriaServiceImpl implements CategoriaService {
@@ -27,121 +33,143 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final RowMapper<CategoriaDTO> categoriaMapper = (rs, rowNum) -> CategoriaDTO.builder()
-            .id(rs.getInt("id"))
+    private static final Logger log = LoggerFactory.getLogger(CategoriaServiceImpl.class);
+
+    private final RowMapper<CategoriaDTO> categoriaRowMapper = (rs, rowNum) -> CategoriaDTO.builder()
+            .id(rs.getLong("id"))
             .nombre(rs.getString("nombre"))
             .descripcion(rs.getString("descripcion"))
+            .fechaRegistro(rs.getTimestamp("fecha_registro").toLocalDateTime())
+            .fechaActualizacion(rs.getTimestamp("fecha_actualizacion").toLocalDateTime())
+            .activa(rs.getBoolean("activa"))
             .build();
 
-    /**
-     * Obtiene todas las categorías de la base de datos.
-     * @return Una lista de instancias de CategoriaDTO con los datos de las categorías.
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<CategoriaDTO> obtenerTodasLasCategorias() {
-        String sql = "SELECT * FROM categoria ORDER BY nombre";
-        return jdbcTemplate.query(sql, categoriaMapper);
-    }
-
-    /**
-     * Obtiene una categoría por su identificador.
-     * @param id Identificador de la categoría.
-     * @return Una instancia de CategoriaDTO con los datos de la categoría.
-     * @throws RecursoNoEncontradoException Si la categoría no existe.
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public CategoriaDTO obtenerCategoriaPorId(int id) {
+    private List<CategoriaDTO> ejecutarConsultaListaCategorias(String sql, Object... parametros) {
         try {
-            String sql = "SELECT * FROM categoria WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, categoriaMapper, id);
+            log.info("Ejecutando consulta: {}", sql);
+            return jdbcTemplate.query(sql, parametros, categoriaRowMapper);
         } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("Categoría", "id", id);
+            log.error("No se encontraron categorias");
+            throw new RecursoNoEncontradoException("Categorias", "filtro aplicado", null);
         }
     }
 
-    /**
-     * Crea una categoría en la base de datos.
-     * @param categoria Instancia de CrearCategoriaDTO con los datos de la categoría.
-     * @return Una instancia de CategoriaDTO con los datos de la categoría creada.
-     */
     @Override
-    @Transactional
-    public CategoriaDTO crearCategoria(CrearCategoriaDTO categoria) {
-        String sql = "INSERT INTO categoria (nombre, descripcion) VALUES (?, ?)";
+    public List<CategoriaDTO> obtenerTodasLasCategorias() {
+        return ejecutarConsultaListaCategorias("SELECT * FROM categoria");
+    }
+
+    @Override
+    public List<CategoriaDTO> obtenerCategorias(int pagina) {
+        return ejecutarConsultaListaCategorias("SELECT * FROM categoria LIMIT 10 OFFSET ?", pagina);
+    }
+
+    @Override
+    public CategoriaDTO obtenerCategoriaPorId(long id) {
+        try {
+            log.info("Ejecutando consulta: SELECT * FROM categoria WHERE id = {}", id);
+            return jdbcTemplate.queryForObject("SELECT * FROM categoria WHERE id = ?", categoriaRowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("No se encontraron categorias");
+            throw new RecursoNoEncontradoException("Categorias", "filtro aplicado", null);
+        }
+    }
+
+    @Override
+    public CategoriaDTO obtenerCategoriaPorProducto(long idProducto) {
+        try {
+            log.info("Obteniendo la categoría del producto con id {}", idProducto);
+            String sql = "SELECT id_categoria FROM producto WHERE id_producto = ?";
+            Long idCategoria = jdbcTemplate.queryForObject(sql, Long.class, idProducto);
+
+            String sqlCategoria = "SELECT * FROM categoria WHERE id = ?";
+            log.info("Obteniendo la categoria con id {}", idCategoria);
+            return jdbcTemplate.queryForObject(sqlCategoria, categoriaRowMapper, idCategoria);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("No se ha encontrado la categoría del producto con id {}", idProducto);
+            throw new RecursoNoEncontradoException("Producto", "id", idProducto);
+        }
+    }
+
+    @Override
+    public CategoriaDTO crearCategoria(CrearCategoriaDTO categoriaDTO) {
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("nombre", categoriaDTO.getNombre());
+        fields.put("descripcion", categoriaDTO.getDescripcion());
+        fields.put("fecha_registro", Timestamp.valueOf(LocalDateTime.now()));
+        fields.put("fecha_actualizacion", Timestamp.valueOf(LocalDateTime.now()));
+        fields.put("activa", true);
+
+        String sql = DynamicSqlBuilder.buildInsertSql("categoria", fields);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, categoria.getNombre());
-            ps.setString(2, categoria.getDescripcion());
+
+        log.info("Creando categoria con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
-        
-        Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
-        
-        return CategoriaDTO.builder()
-                .id(id)
-                .nombre(categoria.getNombre())
-                .descripcion(categoria.getDescripcion())
-                .build();
+
+        Number key = keyHolder.getKey();
+        if (key == null) {
+            log.error("Error al crear la categoria, clave generada es nula");
+            throw new RecursoNoEncontradoException("Categorias", "filtro aplicado", null);
+        }
+
+        return obtenerCategoriaPorId(key.longValue());
+
     }
 
-    /**
-     * Actualiza una categoría en la base de datos.
-     * @param id Identificador de la categoría.
-     * @param categoria Instancia de ActualizarCategoriaDTO con los datos de la categoría.
-     * @throws RecursoNoEncontradoException Si la categoría no existe.
-     */
     @Override
-    @Transactional
-    public void actualizarCategoria(int id, ActualizarCategoriaDTO categoria) {
-        if (!existeCategoriaPorId(id)) {
-            throw new RecursoNoEncontradoException("Categoría", "id", id);
+    public void actualizarCategoria(long id, ActualizarCategoriaDTO categoriaDTO) {
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        if (categoriaDTO.getNombre() != null) {
+            fields.put("nombre", categoriaDTO.getNombre());
         }
-        
-        String sql = "UPDATE categoria SET nombre = ?, descripcion = ? WHERE id = ?";
-        jdbcTemplate.update(sql, categoria.getNombre(), categoria.getDescripcion(), id);
+        if (categoriaDTO.getDescripcion() != null) {
+            fields.put("descripcion", categoriaDTO.getDescripcion());
+        }
+
+        if (fields.isEmpty()) {
+            log.error("No se proporcionaron campos para actualizar la categoria");
+            return;
+        }
+
+        fields.put("fecha_actualizacion", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildUpdateSql("categoria", fields, "id = ?");
+
+        Object[] params = Stream.concat(fields.values().stream(), Stream.of(id)).toArray();
+
+        jdbcTemplate.update(sql, params);
+
     }
 
-    /**
-     * Elimina una categoría de la base de datos.
-     * @param id Identificador de la categoría.
-     * @throws RecursoNoEncontradoException Si la categoría no existe.
-     */
     @Override
-    @Transactional
-    public void eliminarCategoria(int id) {
-        if (!existeCategoriaPorId(id)) {
-            throw new RecursoNoEncontradoException("Categoría", "id", id);
+    public void borrarCategoria(long id) {
+        if (!existeCategoria(id)) {
+            log.warn("No se encontró la categoria con ID: {}", id);
+            throw new RecursoNoEncontradoException("Categorias", "ID", id);
         }
-        String sql = "DELETE FROM categoria WHERE id = ?";
+        log.info("Borrando categoria con ID: {}", id);
+        String sql = DynamicSqlBuilder.buildDeleteSql("categoria", "id = ?");
         jdbcTemplate.update(sql, id);
     }
 
-    /**
-     * Obtiene el número de categorías en la base de datos.
-     * @return El número de categorías.
-     */
     @Override
-    @Transactional(readOnly = true)
-    public int contarCategorias() {
-        String sql = "SELECT COUNT(id) FROM categoria";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
-    }
-    
-    /**
-     * Verifica si una categoría existe en la base de datos.
-     * @param id Identificador de la categoría.
-     * @return true si la categoría existe, false en caso contrario.
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existeCategoriaPorId(int id) {
-        String sql = "SELECT COUNT(id) FROM categoria WHERE id = ?";
+    public boolean existeCategoria(long id) {
+        String sql = DynamicSqlBuilder.buildCountSql("categoria", "id = ?");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
+
 }

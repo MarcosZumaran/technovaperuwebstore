@@ -32,7 +32,7 @@ public class ActualizarProductoDTO {
 
     @Positive(message = "El id de la categoria no puede ser negativo")
     @Schema(description = "Identificador de la categoria", example = "1")
-    private long idCategoria;
+    private Long idCategoria;
 
     @Length(min = 3, max = 20, message = "El estado del producto debe tener entre 3 y 20 caracteres")
     @Schema(description = "Estado del producto", example = "1")

@@ -2,9 +2,15 @@ package com.technovaperu.technovaperuwebstore.implement;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,151 +18,183 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.ProveedorDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProveedorDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProveedorDTO;
 import com.technovaperu.technovaperuwebstore.services.ProveedorService;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
-/**
- * Implementacion de la interfaz {@link ProveedorService} que utiliza JDBC para
- * interactuar con la base de datos.
- *
- * @author Marcos Zumaran
- */
 @Service
 public class ProveedorServiceImpl implements ProveedorService {
-    
-    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public ProveedorServiceImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private JdbcTemplate jdbcTemplate;
 
-    /**
-     * RowMapper para convertir un registro de la base de datos en un objeto
-     * {@link ProveedorDTO}.
-     */
-    private final RowMapper<ProveedorDTO> proveedorRowMapper = (rs, rowNum) -> ProveedorDTO.builder()
-            .id(rs.getInt("id"))
-            .nombre(rs.getString("nombre"))
+    private static final Logger log = LoggerFactory.getLogger(ProveedorServiceImpl.class);
+
+    private final RowMapper<ProveedorDTO> rowMapper = (rs, rowNum) -> ProveedorDTO.builder()
+            .id(rs.getLong("id"))
+            .nombreEmpresa(rs.getString("nombre_empresa"))
+            .ruc(rs.getString("ruc"))
             .direccion(rs.getString("direccion"))
             .telefono(rs.getString("telefono"))
-            .email(rs.getString("email"))
-            .pais(rs.getString("pais"))
+            .correo(rs.getString("correo"))
+            .fechaRegistro(rs.getTimestamp("fecha_registro").toLocalDateTime())
+            .fechaActualizacion(rs.getTimestamp("fecha_actualizacion").toLocalDateTime())
+            .activo(rs.getBoolean("activo"))
             .build();
-    
-    @Override 
-    @Transactional(readOnly = true)
-    public List<ProveedorDTO> obtenerTodosLosProveedores(int pagina){
-        // Si la pagina es menor o igual a 0, se establece en 1
-        if (pagina <= 0) pagina = 1;
-        // Se calcula el offset y el limite para la consulta
-        int offset = (pagina - 1) * 10;
-        int limit = 10;
-        // Se consulta la base de datos con la consulta SQL
-        String sql = "SELECT * FROM proveedor ORDER BY id DESC LIMIT ? OFFSET ?";
-        return jdbcTemplate.query(sql, proveedorRowMapper, limit, offset);
-    }
 
-    @Override 
-    public ProveedorDTO obtenerProveedorPorId(int id) {
-        try {
-            // Se consulta la base de datos con la consulta SQL
-            String sql = "SELECT * FROM proveedor WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, proveedorRowMapper, id);
+    private List<ProveedorDTO> ejecutarConsultaListaProveedores(String sql, Object... parametros) {
+        try{
+            log.info("Ejecutando consulta: {}", sql);
+            return jdbcTemplate.query(sql, rowMapper, parametros);
         } catch (EmptyResultDataAccessException e) {
-            // Si no se encuentra el proveedor, se lanza una excepcion
-            throw new RecursoNoEncontradoException("Proveedor", "id", id);
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Proveedores", "filtro aplicado", null);
         }
     }
 
-    @Override 
-    @Transactional
-    public ProveedorDTO crearProveedor(CrearProveedorDTO proveedor){
-        // Se crea la consulta SQL para insertar un nuevo proveedor
-        String sql = "INSERT INTO proveedor (nombre, direccion, telefono, email, pais) VALUES(?, ?, ?, ?, ?)";
-        // Se utiliza un KeyHolder para obtener el ID generado por la base de datos
+    @Override
+    public List<ProveedorDTO> obtenerTodosLosProveedores() {
+        return ejecutarConsultaListaProveedores("SELECT * FROM proveedor");
+    }
+
+    @Override
+    public List<ProveedorDTO> obtenerProveedores(int pagina) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 proveedores
+        return ejecutarConsultaListaProveedores("SELECT * FROM proveedor LIMIT 10 OFFSET ?", offset);
+    } 
+
+    @Override
+    public List<ProveedorDTO> obtenerProveedoresPorNombre(String nombre){
+        return ejecutarConsultaListaProveedores("SELECT * FROM proveedor WHERE nombre_empresa = ?", nombre);
+    }
+
+    @Override
+    public List<ProveedorDTO> obtenerProveedoresPorActivo(boolean activo){
+        return ejecutarConsultaListaProveedores("SELECT * FROM proveedor WHERE activo = ?", activo);
+    }
+
+    @Override
+    public ProveedorDTO obtenerProveedorPorId(long id){
+        try{
+            log.info("Obteniendo proveedor por ID: {}", id);
+            return jdbcTemplate.queryForObject("SELECT * FROM proveedor WHERE id = ?", rowMapper, id);
+        }catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Proveedores", "filtro aplicado", String.valueOf(id));
+        }
+    }
+
+    @Override
+    public ProveedorDTO obtenerProveedorPorRuc(String ruc){
+        try{
+            log.info("Obteniendo proveedor por RUC: {}", ruc);
+            return jdbcTemplate.queryForObject("SELECT * FROM proveedor WHERE ruc = ?", rowMapper, ruc);
+        }catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Proveedores", "filtro aplicado", ruc);
+        }
+    }
+
+    @Override
+    public ProveedorDTO crearProveedor(CrearProveedorDTO proveedorDTO){
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("nombre_empresa", proveedorDTO.getNombreEmpresa());
+        fields.put("ruc", proveedorDTO.getRuc());
+        fields.put("direccion", proveedorDTO.getDireccion());
+        fields.put("telefono", proveedorDTO.getTelefono());
+        fields.put("correo", proveedorDTO.getCorreo());
+        fields.put("activo", true);
+        fields.put("fecha_creacion", Timestamp.valueOf(LocalDateTime.now()));
+        fields.put("fecha_actualizacion", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildInsertSql("proveedor", fields);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        // Se ejecuta la consulta con los datos del proveedor
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, proveedor.getNombre());
-            ps.setString(2, proveedor.getDireccion());
-            ps.setString(3, proveedor.getTelefono());
-            ps.setString(4, proveedor.getEmail());
-            ps.setString(5, proveedor.getPais());
+        log.info("Creando proveedor con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
 
-        // Se obtiene el ID generado por la base de datos
         Number key = keyHolder.getKey();
         if (key == null) {
-            // Si no se puede obtener el ID, se lanza una excepcion
-            throw new RuntimeException("No se pudo obtener el ID generado para el proveedor");
+            log.error("Error al crear el proveedor, clave generada es nula");
+            throw new IllegalStateException("No se pudo obtener el ID generado para el proveedor");
         }
 
-        // Se crea el objeto ProveedorDTO con los datos del proveedor y su ID
-        Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        return obtenerProveedorPorId(key.longValue());
 
-        return ProveedorDTO.builder()
-                .id(id)
-                .nombre(proveedor.getNombre())
-                .direccion(proveedor.getDireccion())
-                .telefono(proveedor.getTelefono())
-                .email(proveedor.getEmail())
-                .pais(proveedor.getPais())
-                .build();
     }
-    
-    @Override 
-    @Transactional
-    public void actualizarProveedor(int id, ActualizarProveedorDTO proveedor){
-        if (!existeProveedorPorId(id)) {
-            throw new RecursoNoEncontradoException("Proveedor", "id", id);
-        }
-        // Se crea la consulta SQL para actualizar un proveedor
-        String sql = "UPDATE proveedor SET nombre = ?, direccion = ?, telefono = ?, email = ?, pais = ? WHERE id = ?";
-        // Se ejecuta la consulta con los datos del proveedor
-        jdbcTemplate.update(sql, proveedor.getNombre(), proveedor.getDireccion(), proveedor.getTelefono(), proveedor.getEmail(), proveedor.getPais(), id);
-    }
-    
+
     @Override
-    @Transactional
-    public void eliminarProveedor(int id){
-        if (!existeProveedorPorId(id)) {
-            throw new RecursoNoEncontradoException("Proveedor", "id", id);
+    public void actualizarProveedor(long id, ActualizarProveedorDTO proveedorDTO){
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        if (proveedorDTO.getNombreEmpresa() != null)
+            fields.put("nombre_empresa", proveedorDTO.getNombreEmpresa());
+
+        if (proveedorDTO.getRuc() != null)
+            fields.put("ruc", proveedorDTO.getRuc());
+
+        if (proveedorDTO.getDireccion() != null)
+            fields.put("direccion", proveedorDTO.getDireccion());
+
+        if (proveedorDTO.getTelefono() != null)
+            fields.put("telefono", proveedorDTO.getTelefono());
+
+        if (proveedorDTO.getCorreo() != null)
+            fields.put("correo", proveedorDTO.getCorreo());
+
+        if (proveedorDTO.getActivo() != null)
+            fields.put("activo", proveedorDTO.getActivo());
+
+
+        if (fields.isEmpty()) {
+            log.error("No se proporcionaron campos para actualizar el proveedor");
+            return;
         }
-        // Se crea la consulta SQL para eliminar un proveedor
-        String sql = "DELETE FROM proveedor WHERE id = ?";
-        // Se ejecuta la consulta con el ID del proveedor
+
+        fields.put("fecha_actualizacion", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildUpdateSql("proveedor", fields, "id = ?");
+
+        Object[] params = Stream.concat(fields.values().stream(), Stream.of(id)).toArray();
+
+        jdbcTemplate.update(sql, params);
+    }
+
+    @Override
+    public void borrarProveedor(long id){
+
+        if(!existeProveedor(id)){
+            log.error("Proveedor con ID {} no encontrado", id);
+            throw new RecursoNoEncontradoException("Proveedores", "filtro aplicado", String.valueOf(id));
+        }
+
+        log.info("Borrando proveedor con ID: {}", id);
+
+        String sql = DynamicSqlBuilder.buildDeleteSql("proveedor", "id = ?");
         jdbcTemplate.update(sql, id);
     }
 
-    @Override 
-    @Transactional(readOnly = true)
-    public int contarProveedores(){
-        // Se crea la consulta SQL para contar los proveedores
-        String sql = "SELECT COUNT(id) FROM proveedor";
-        // Se ejecuta la consulta y se obtiene el resultado
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        // Se devuelve el resultado o 0 si no se encuentra ningun proveedor
-        return (count != null) ? count : 0;
-    }
-
     @Override
-    @Transactional(readOnly = true)
-    public boolean existeProveedorPorId(int id) {
-        // Se crea la consulta SQL para verificar si existe un proveedor con el ID
-        String sql = "SELECT COUNT(id) FROM proveedor WHERE id = ?";
-        // Se ejecuta la consulta con el ID del proveedor
+    public boolean existeProveedor(long id){
+        String sql = DynamicSqlBuilder.buildCountSql("proveedor", "id = ?");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        // Se devuelve true si existe el proveedor o false en caso contrario
         return count != null && count > 0;
     }
-}
 
+}

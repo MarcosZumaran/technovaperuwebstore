@@ -6,10 +6,10 @@ import com.technovaperu.technovaperuwebstore.model.dto.base.FavoritosDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearFavoritoDTO;
 
 public interface FavoritosService {
-    List<FavoritosDTO> obtenerFavoritosPorUsuario(int idUsuario, int pagina);
-    FavoritosDTO obtenerFavoritoPorId(int id);
+    List<FavoritosDTO> obtenerFavoritosPorUsuario(long idUsuario, int pagina);
+    FavoritosDTO obtenerFavoritoPorId(long id);
     FavoritosDTO crearFavorito(CrearFavoritoDTO favorito);
-    void eliminarFavorito(int id);
+    void eliminarFavorito(long id);
     int contarFavoritos();
-    boolean existeFavoritoPorId(int id);
+    boolean existeFavoritoPorId(long id);
 }

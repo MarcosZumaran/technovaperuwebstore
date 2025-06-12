@@ -19,5 +19,5 @@ public class ActualizarComentarioDTO {
 
     @Positive(message = "La calificacion debe ser mayor o igual que 0")
     @Schema(description = "Calificacion del comentario", example = "5")
-    private int calificacion;
+    private Integer calificacion;
 }

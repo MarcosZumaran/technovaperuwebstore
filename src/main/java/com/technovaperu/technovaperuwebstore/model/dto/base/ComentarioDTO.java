@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class ComentarioDTO {
 
     @Schema(description = "ID único del comentario", example = "1")
-    private int id;
+    private long id;
 
     @NotNull(message = "El id de usuario no puede estar vacío")
     @Positive(message = "El id de usuario debe ser mayor que 0")

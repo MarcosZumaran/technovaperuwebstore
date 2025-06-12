@@ -2,10 +2,15 @@ package com.technovaperu.technovaperuwebstore.implement;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,153 +18,160 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.ItemCarritoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearItemCarritoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarItemCarritoDTO;
 import com.technovaperu.technovaperuwebstore.services.ItemCarritoService;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
 @Service
-public class ItemCarritoServiceImpl implements ItemCarritoService{
-    
-    private final JdbcTemplate jdbcTemplate;
+public class ItemCarritoServiceImpl implements ItemCarritoService {
 
     @Autowired
-    public ItemCarritoServiceImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private JdbcTemplate jdbcTemplate;
 
-    // Mapeador de filas para convertir ResultSet en objetos ItemCarritoDTO
+    private static final Logger log = LoggerFactory.getLogger(ItemCarritoServiceImpl.class);
+
     private final RowMapper<ItemCarritoDTO> itemCarritoRowMapper = (rs, rowNum) -> ItemCarritoDTO.builder()
-            .id(rs.getInt("id"))
-            .idProducto(rs.getInt("id_producto"))
-            .cantidad(rs.getInt("cantidad"))
+            .id(rs.getLong("id"))
+            .idCarrito(rs.getLong("id_carrito"))
+            .idProductoPresentacion(rs.getLong("id_producto_presentacion"))
+            .cantidad(rs.getBigDecimal("cantidad"))
             .fechaAgregado(rs.getTimestamp("fecha_agregado").toLocalDateTime())
+            .precioActual(rs.getBigDecimal("precio_actual"))
+            .nombreProducto(rs.getString("nombre_producto"))
+            .unidadmedidaPresentacion(rs.getString("unidadmedida_presentacion"))
+            .activo(rs.getBoolean("activo"))
             .build();
-    
-    /**
-     * Obtiene una lista de items de carrito por el ID del carrito.
-     * @param idCarrito ID del carrito al que pertenecen los items.
-     * @param pagina Número de página para la paginación.
-     * @return Lista de ItemCarritoDTO.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public List<ItemCarritoDTO> obtenerItemsCarritoPorCarrito(int idCarrito, int pagina){
-        if (pagina <= 0) pagina = 1;
-        int offset = (pagina - 1) * 10;
-        int limit = 10;
-        String sql = "SELECT * FROM item_carrito WHERE id_carrito = ? ORDER BY fecha_agregado DESC LIMIT ? OFFSET ?";
-        return jdbcTemplate.query(sql, itemCarritoRowMapper, idCarrito, limit, offset);
-    }
 
-    /**
-     * Obtiene un item de carrito por su ID.
-     * @param id ID del item de carrito.
-     * @return ItemCarritoDTO correspondiente al ID proporcionado.
-     * @throws RecursoNoEncontradoException si no se encuentra el item.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public ItemCarritoDTO obtenerItemCarritoPorId(int id){
-        try {
-            String sql = "SELECT * FROM item_carrito WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, itemCarritoRowMapper, id);
+    List<ItemCarritoDTO> ejecutarConsultaListaItemsCarrito(String sql, Object... parametros) {
+        try{
+            log.info("Ejecutando consulta: {}", sql);
+            return jdbcTemplate.query(sql, itemCarritoRowMapper, parametros);
         } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("Item Carrito", "id", id);
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("ItemsCarrito", "filtro aplicado", null);
         }
     }
 
-    /**
-     * Crea un nuevo item de carrito en la base de datos.
-     * @param item Datos del item a crear.
-     * @return ItemCarritoDTO creado.
-     */
-    @Override 
-    @Transactional
-    public ItemCarritoDTO crearItemCarrito(CrearItemCarritoDTO item){
-        String sql = "INSERT INTO item_carrito (id_carrito, id_producto, cantidad) VALUES(?, ?, ?)";
+    @Override
+    public List<ItemCarritoDTO> obtenerTodosLosItemsCarrito(){
+        return ejecutarConsultaListaItemsCarrito("SELECT * FROM item_carrito");
+    }
+
+    @Override
+    public List<ItemCarritoDTO> obtenerItemsCarrito(int pagina){
+        int offset = (pagina - 1) * 10;
+        return ejecutarConsultaListaItemsCarrito("SELECT * FROM item_carrito LIMIT 10 OFFSET ?", offset);
+    }
+
+    @Override
+    public List<ItemCarritoDTO> obtenerItemsCarritoPorCarrito(int pag, long idCarrito){
+        int offset = (pag - 1) * 10;
+        return ejecutarConsultaListaItemsCarrito("SELECT * FROM item_carrito WHERE id_carrito = ? ORDER BY id LIMIT 10 OFFSET ?", idCarrito, offset);
+    }
+
+    @Override
+    public List<ItemCarritoDTO> obtenerItemsCarritoPorCarritoSiEsActivo(int pagina, long idCarrito){
+        int offset = (pagina - 1) * 10;
+        return ejecutarConsultaListaItemsCarrito("SELECT * FROM item_carrito WHERE id_carrito = ? AND activo = 1 ORDER BY id LIMIT 10 OFFSET ?", idCarrito, offset);
+    }
+
+    @Override
+    public List<ItemCarritoDTO> obtenerItemsCarritoPorCarritoSiNoEsActivo(int pagina, long idCarrito){
+        int offset = (pagina - 1) * 10;
+        return ejecutarConsultaListaItemsCarrito("SELECT * FROM item_carrito WHERE id_carrito = ? AND activo = 0 ORDER BY id LIMIT 10 OFFSET ?", idCarrito, offset);
+    }
+
+    @Override
+    public ItemCarritoDTO obtenerItemCarritoPorId(long id){
+        try{
+            log.info("Obteniendo item carrito por ID: {}", id);
+            return jdbcTemplate.queryForObject("SELECT * FROM item_carrito WHERE id = ?", itemCarritoRowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("ItemCarrito", "id", id);
+        }
+    }
+
+    @Override
+    public ItemCarritoDTO crearItemCarrito(CrearItemCarritoDTO carritoDTO){
+
+        Map <String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("id_carrito", carritoDTO.getIdCarrito());
+        fields.put("id_producto_presentacion", carritoDTO.getIdProductoPresentacion());
+        fields.put("cantidad", carritoDTO.getCantidad());
+        fields.put("fecha_agregado", Timestamp.valueOf(LocalDateTime.now()));
+        fields.put("precio_actual", carritoDTO.getPrecioActual());
+        fields.put("activo", true);
+
+        String sql = DynamicSqlBuilder.buildInsertSql("item_carrito", fields);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, item.getIdCarrito());
-            ps.setInt(2, item.getIdProducto());
-            ps.setInt(3, item.getCantidad());
+        log.info("Creando item carrito con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
 
         Number key = keyHolder.getKey();
         if (key == null) {
-            throw new RuntimeException("No se pudo obtener el ID generado para el item");
+            log.error("Error al crear el item carrito, clave generada es nula");
+            throw new RecursoNoEncontradoException("ItemCarrito", "filtro aplicado", null);
         }
 
-        Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        return obtenerItemCarritoPorId(key.longValue());
 
-        return ItemCarritoDTO.builder()
-                .id(id)
-                .idCarrito(item.getIdCarrito())
-                .idProducto(item.getIdProducto())
-                .cantidad(item.getCantidad())
-                .fechaAgregado(LocalDateTime.now())
-                .build();
     }
-    
-    /**
-     * Actualiza la cantidad de un item de carrito existente.
-     * @param id ID del item a actualizar.
-     * @param item Datos de actualización.
-     * @throws RecursoNoEncontradoException si el item no existe.
-     */
-    @Override 
-    @Transactional
-    public void actualizarItemCarrito(int id, ActualizarItemCarritoDTO item){
-        if (!existeItemCarritoPorId(id)) {
-            throw new RecursoNoEncontradoException("Item Carrito", "id", id);
+
+    @Override
+    public void actualizarItemCarrito(long id, ActualizarItemCarritoDTO carritoDTO){
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        if (carritoDTO.getCantidad() != null) fields.put("cantidad", carritoDTO.getCantidad());
+        if (carritoDTO.getPrecioActual() != null) fields.put("precio_actual", carritoDTO.getPrecioActual());
+        if (carritoDTO.getActivo() != null) fields.put("activo", carritoDTO.getActivo());
+
+        if (fields.isEmpty()) {
+            log.error("No se proporcionaron campos para actualizar el item carrito");
+            return;
         }
-        String sql = "UPDATE item_carrito SET cantidad = ? WHERE id = ?";
-        jdbcTemplate.update(sql, item.getCantidad(), id);
+
+        String sql = DynamicSqlBuilder.buildUpdateSql("item_carrito", fields, "id = ?");
+
+        Object[] params = Stream.concat(fields.values().stream(), Stream.of(id)).toArray();
+
+        log.info("Actualizando item carrito con datos: {}", fields);
+
+        jdbcTemplate.update(sql, params);
+
     }
-    
-    /**
-     * Elimina un item de carrito por su ID.
-     * @param id ID del item a eliminar.
-     * @throws RecursoNoEncontradoException si el item no existe.
-     */
-    @Override 
-    @Transactional
-    public void eliminarItemCarrito(int id){
-        if (!existeItemCarritoPorId(id)) {
-            throw new RecursoNoEncontradoException("Item Carrito", "id", id);
+
+    @Override
+    public void borrarItemCarrito(long id){
+        if (!existeItemCarrito(id)){
+            throw new RecursoNoEncontradoException("ItemCarrito", "filtro aplicado", String.valueOf(id));
         }
-        String sql = "DELETE FROM item_carrito WHERE id = ?";
+        log.info("Borrando item carrito con ID: {}", id);
+        String sql = DynamicSqlBuilder.buildDeleteSql("item_carrito", "id = ?");
         jdbcTemplate.update(sql, id);
     }
-    
-    /**
-     * Cuenta el número total de items de carrito.
-     * @return Cantidad de items de carrito.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public int contarItemsCarrito(){
-        String sql = "SELECT COUNT(id) FROM item_carrito";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
-    }
 
-    /**
-     * Verifica si un item de carrito existe por su ID.
-     * @param id ID del item de carrito.
-     * @return true si el item existe, false de lo contrario.
-     */
     @Override
-    @Transactional(readOnly = true)
-    public boolean existeItemCarritoPorId(int id) {
-        String sql = "SELECT COUNT(id) FROM item_carrito WHERE id = ?";
+    public boolean existeItemCarrito(long id){
+        String sql = DynamicSqlBuilder.buildCountSql("item_carrito", "id = ?");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
+
 }

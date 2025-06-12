@@ -2,9 +2,14 @@ package com.technovaperu.technovaperuwebstore.implement;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,26 +17,20 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.FavoritosDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearFavoritoDTO;
 import com.technovaperu.technovaperuwebstore.services.FavoritosService;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
 @Service
 public class FavoritosServiceImpl implements FavoritosService{
     
-    private final JdbcTemplate jdbcTemplate;
-
-    /**
-     * Constructor para injectar la dependencia del {@link JdbcTemplate}.
-     * @param jdbcTemplate el objeto {@link JdbcTemplate} que se va a utilizar para hacer operaciones en la base de datos.
-     */
     @Autowired
-    public FavoritosServiceImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private JdbcTemplate jdbcTemplate;
+
+    private static final Logger log = LoggerFactory.getLogger(FavoritosServiceImpl.class);
 
     private final RowMapper<FavoritosDTO> favoritosRowMapper = (rs, rowNum) -> FavoritosDTO.builder()
             .id(rs.getInt("id"))
@@ -39,105 +38,87 @@ public class FavoritosServiceImpl implements FavoritosService{
             .idProducto(rs.getInt("id_producto"))
             .build();
 
-    /**
-     * Obtiene una lista de favoritos de un usuario paginados.
-     * @param idUsuario el ID del usuario a obtener los favoritos.
-     * @param pagina el n mero de p gina a obtener.
-     * @return una lista de {@link FavoritosDTO} con la informaci n de los favoritos del usuario.
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<FavoritosDTO> obtenerFavoritosPorUsuario(int idUsuario, int pagina){
-        if (pagina <= 0) pagina = 1;
-        int offset = (pagina - 1) * 10;
-        int limit = 10;
-        String sql = "SELECT * FROM favorito WHERE id_usuario = ? ORDER BY fecha_agregado DESC LIMIT ? OFFSET ?";
-        return jdbcTemplate.query(sql, favoritosRowMapper, idUsuario, limit, offset);
-    }
-
-    /**
-     * Obtiene un favorito por su ID.
-     * @param id el ID del favorito a obtener.
-     * @return un objeto {@link FavoritosDTO} con la informaci n del favorito. Si no existe un favorito con ese ID se lanza una excepci n {@link RecursoNoEncontradoException}.
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public FavoritosDTO obtenerFavoritoPorId(int id){
-        try {
-            String sql = "SELECT * FROM favorito WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, favoritosRowMapper, id);
+    private List<FavoritosDTO> ejecutarConsultaListaFavoritos(String sql, Object... parametros) {
+        try{
+            log.info("Ejecutando consulta: {}", sql);
+            return jdbcTemplate.query(sql, favoritosRowMapper, parametros);
         } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("Favorito", "id", id);
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Presentaciones de Productos", "filtro aplicado", null);
         }
     }
 
-    /**
-     * Crea un nuevo favorito.
-     * @param favorito el objeto {@link CrearFavoritoDTO} con la informaci n del favorito a crear.
-     * @return un objeto {@link FavoritosDTO} con la informaci n del nuevo favorito.
-     */
     @Override
-    @Transactional
+    public List<FavoritosDTO> obtenerFavoritosPorUsuario(long idUsuario, int pagina){
+        String sql = "SELECT * FROM favoritos WHERE id_usuario = ?";
+        return ejecutarConsultaListaFavoritos(sql, idUsuario);
+    }
+
+    @Override
+    public FavoritosDTO obtenerFavoritoPorId(long id){
+        try{
+            log.info("Ejecutando consulta: {}", "SELECT * FROM favoritos WHERE id = ?");
+            return jdbcTemplate.queryForObject("SELECT * FROM favoritos WHERE id = ?", favoritosRowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Presentaciones de Productos", "filtro aplicado", null);
+        }
+    }
+
+    @Override
     public FavoritosDTO crearFavorito(CrearFavoritoDTO favorito){
-        String sql = "INSERT INTO favorito (id_usuario, id_producto) VALUES(?, ?)";
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("id_usuario", favorito.getIdUsuario());
+        fields.put("id_producto", favorito.getIdProducto());
+        fields.put("fecha_creacion", Timestamp.valueOf(LocalDateTime.now()));
+        fields.put("fecha_modificacion", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildInsertSql("favoritos", fields);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, favorito.getIdUsuario());
-            ps.setInt(2, favorito.getIdProducto());
+        log.info("Creando favorito con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
 
         Number key = keyHolder.getKey();
         if (key == null) {
-            throw new RuntimeException("No se pudo obtener el ID generado para el favorito");
+            log.error("Error al obtener el ID del favorito creado");
+            throw new RecursoNoEncontradoException("Favorito", "no se pudo crear", null);
         }
+        return obtenerFavoritoPorId(key.longValue());
 
-        Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
-
-        return FavoritosDTO.builder()
-                .id(id)
-                .idUsuario(favorito.getIdUsuario())
-                .idProducto(favorito.getIdProducto())
-                .build();
     }
 
-    /**
-     * Elimina un favorito por su ID.
-     * @param id el ID del favorito a eliminar. Si no existe un favorito con ese ID se lanza una excepci n {@link RecursoNoEncontradoException}.
-     */
     @Override
-    @Transactional
-    public void eliminarFavorito(int id){
-        if (!existeFavoritoPorId(id)) {
-            throw new RecursoNoEncontradoException("Favorito", "id", id);
+    public void eliminarFavorito(long id){
+        if(!existeFavoritoPorId(id)){
+            throw new RecursoNoEncontradoException("Favorito", "filtro aplicado", String.valueOf(id));
         }
-        String sql = "DELETE FROM favorito WHERE id = ?";
+        log.info("Eliminando favorito con ID: {}", id);
+        String sql = DynamicSqlBuilder.buildDeleteSql("favoritos", "id = ?");
         jdbcTemplate.update(sql, id);
     }
 
-    /**
-     * Obtiene el n mero total de favoritos en la base de datos.
-     * @return el n mero total de favoritos.
-     */
     @Override
-    @Transactional(readOnly = true)
     public int contarFavoritos(){
-        String sql = "SELECT COUNT(id) FROM favorito";
+        String sql = DynamicSqlBuilder.buildCountSql("favoritos", "id");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
+        return count != null && count > 0 ? count : 0;
     }
 
-    /**
-     * Verifica si existe un favorito con el ID proporcionado.
-     * @param id el ID del favorito a verificar.
-     * @return true si existe un favorito con ese ID, false en caso contrario.
-     */
     @Override
-    @Transactional(readOnly = true)
-    public boolean existeFavoritoPorId(int id) {
-        String sql = "SELECT COUNT(id) FROM favorito WHERE id = ?";
+    public boolean existeFavoritoPorId(long id){
+        String sql = DynamicSqlBuilder.buildCountSql("favoritos", "id = ?");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }

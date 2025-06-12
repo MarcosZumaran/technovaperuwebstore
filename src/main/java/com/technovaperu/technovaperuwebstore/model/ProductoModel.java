@@ -38,7 +38,7 @@ public class ProductoModel {
 
     @ManyToOne
     @JoinColumn(name = "id_categoria", nullable = false)
-    private CategoriaModel categorias;
+    private CategoriaModel categoria;
 
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
@@ -82,7 +82,7 @@ public class ProductoModel {
             String marca, String detalles_producto, String estado, LocalDateTime fechaRegistro,
             LocalDateTime fechaActualizacion) {
         this.proveedor = proveedor;
-        this.categorias = categorias;
+        this.categoria = categorias;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.marca = marca;

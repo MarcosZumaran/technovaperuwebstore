@@ -2,9 +2,14 @@ package com.technovaperu.technovaperuwebstore.implement;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,13 +17,13 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.ProductoImagenDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProductoImagenDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProductoImagenDTO;
 import com.technovaperu.technovaperuwebstore.services.ProductoImagenService;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
 /**
  * Implementación de la interfaz {@link ProductoImagenService} que utiliza JDBC para acceder a la base de datos.
@@ -28,120 +33,204 @@ import com.technovaperu.technovaperuwebstore.services.ProductoImagenService;
 @Service
 public class ProductoImagenServiceImpl implements ProductoImagenService {
 
-    private final JdbcTemplate jdbcTemplate;
-
     @Autowired
-    public ProductoImagenServiceImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private JdbcTemplate jdbcTemplate;
 
-    /**
-     * RowMapper para convertir un registro de la base de datos en un objeto {@link ProductoImagenDTO}.
-     */
-    private final RowMapper<ProductoImagenDTO> productoImagenRowMapper = (rs, rowNum) -> ProductoImagenDTO.builder()
-            .id(rs.getInt("id"))
-            .idProducto(rs.getInt("id_producto"))
+    private static final Logger log = LoggerFactory.getLogger(ProductoImagenServiceImpl.class);
+
+    private final RowMapper<ProductoImagenDTO> rowMapper = (rs, rowNum) -> ProductoImagenDTO.builder()
+            .id(rs.getLong("id"))
+            .idProducto(rs.getLong("producto_id"))
             .url(rs.getString("url"))
             .tipo(rs.getString("tipo"))
             .build();
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProductoImagenDTO> obtenerImagenesPorProducto(int id) {
-        // Obtiene todas las imágenes asociadas a un producto
-        String sql = "SELECT * FROM producto_imagen WHERE id_producto = ?";
-        return jdbcTemplate.query(sql, productoImagenRowMapper, id);
+    private List<ProductoImagenDTO> ejecutarConsultaListaProductoImagen(String sql, Object... args) {
+        try {
+            log.info("Ejecutando consulta: {}", sql);
+            return jdbcTemplate.query(sql, rowMapper, args);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Imagenes de Productos", "filtro aplicado", null);
+        }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public ProductoImagenDTO obtenerImagenPorId(int id) {
-        // Obtiene una imagen por su ID
-        try {
-            String sql = "SELECT * FROM producto_imagen WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, productoImagenRowMapper, id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("Imagen", "id", id);
+    private static final Set<String> TIPOS_VALIDOS = Set.of("PORTADA", "GALERIA");
+
+    private void validarTipo(String tipo) {
+        if (tipo == null || !TIPOS_VALIDOS.contains(tipo.toUpperCase())) {
+            throw new IllegalArgumentException("Estado inválido: " + tipo);
         }
     }
 
     @Override
-    @Transactional
-    public ProductoImagenDTO crearImagen(CrearProductoImagenDTO imagen) {
-        // Crea una nueva imagen para un producto
-        String sql = "INSERT INTO producto_imagen (id_producto, url, tipo) VALUES (?, ?, ?)";
+    public List<ProductoImagenDTO> obtenerImagenesPorProducto(long idProducto) {
+        return ejecutarConsultaListaProductoImagen("SELECT * FROM producto_imagen WHERE producto_id = ?", idProducto);
+    }
+
+    @Override
+    public List<ProductoImagenDTO> obtenerImagenesPorProductoYTipo(long idProducto, String tipo) {
+        return ejecutarConsultaListaProductoImagen("SELECT * FROM producto_imagen WHERE producto_id = ? AND tipo = ?",
+                idProducto, tipo);
+    }
+
+    @Override
+    public List<ProductoImagenDTO> obtenerTodasLasImagenes() {
+        return ejecutarConsultaListaProductoImagen("SELECT * FROM producto_imagen");
+    }
+
+    @Override
+    public List<ProductoImagenDTO> obtenerImagenes(int pagina) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 imágenes
+        return ejecutarConsultaListaProductoImagen("SELECT * FROM producto_imagen LIMIT 10 OFFSET ?", offset);
+    }
+
+    @Override
+    public List<ProductoImagenDTO> obtenerTodasLasImagenesPorTipo(String tipo) {
+        return ejecutarConsultaListaProductoImagen("SELECT * FROM producto_imagen WHERE tipo = ?", tipo);
+    }
+
+    @Override
+    public List<ProductoImagenDTO> obtenerImagenesPorTipo(int pagina, String tipo) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 imágenes
+        return ejecutarConsultaListaProductoImagen("SELECT * FROM producto_imagen WHERE tipo = ? LIMIT 10 OFFSET ?",
+                tipo, offset);
+    }
+
+    @Override
+    public ProductoImagenDTO obtenerImagenPorId(long id) {
+        try {
+            log.info("Obteniendo imagen por ID: {}", id);
+            return jdbcTemplate.queryForObject("SELECT * FROM producto_imagen WHERE id = ?", rowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Imagen con ID {} no encontrada", id);
+            throw new RecursoNoEncontradoException("Imagen de Producto", "id", String.valueOf(id));
+        }
+    }
+
+    @Override
+    public ProductoImagenDTO crearImagen(CrearProductoImagenDTO imagenDTO) {
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        String tipo = imagenDTO.getTipo().toUpperCase();
+        validarTipo(tipo);
+
+        fields.put("producto_id", imagenDTO.getIdProducto());
+        fields.put("url", imagenDTO.getUrl());
+        fields.put("tipo", tipo);
+
+        String sql = DynamicSqlBuilder.buildInsertSql("producto_imagen", fields);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, imagen.getIdProducto());
-            ps.setString(2, imagen.getUrl());
-            ps.setString(3, imagen.getTipo());
+        log.info("Creando imagen con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
 
         Number key = keyHolder.getKey();
         if (key == null) {
-            throw new RuntimeException("No se pudo obtener el ID generado para la imagen");
+            log.error("Error al crear la imagen, clave generada es nula");
+            throw new RuntimeException("Error al crear la imagen, clave generada es nula");
         }
 
-        Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        log.info("Imagen creada con ID: {}", key.longValue());
 
-        return ProductoImagenDTO.builder()
-                .id(id)
-                .idProducto(imagen.getIdProducto())
-                .url(imagen.getUrl())
-                .tipo(imagen.getTipo())
-                .build();
+        return obtenerImagenPorId(key.longValue());
+
     }
 
     @Override
-    @Transactional
-    public void actualizarImagen(int id, ActualizarProductoImagenDTO imagen) {
-        // Actualiza una imagen existente
-        if (!existeImagenPorId(id)) {
-            throw new RecursoNoEncontradoException("Imagen", "id", id);
+    public void actualizarImagen(long id, ActualizarProductoImagenDTO imagenDTO) {
+
+        if (!existeImagen(id)) {
+            log.error("Imagen con ID {} no encontrada", id);
+            throw new RecursoNoEncontradoException("Imagen de Producto", "id", String.valueOf(id));
         }
-        String sql = "UPDATE producto_imagen SET url = ?, tipo = ? WHERE id = ?";
-        jdbcTemplate.update(sql, imagen.getUrl(), imagen.getTipo(), id);
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        if (imagenDTO.getUrl() != null)
+            fields.put("url", imagenDTO.getUrl());
+
+        if (imagenDTO.getTipo() != null) {
+            String tipo = imagenDTO.getTipo().toUpperCase();
+            validarTipo(tipo);
+            fields.put("tipo", tipo);
+        }
+
+        if (fields.isEmpty()) {
+            log.warn("No se proporcionaron campos para actualizar la imagen con ID: {}", id);
+            return;
+        }
+
+        String sql = DynamicSqlBuilder.buildUpdateSql("producto_imagen", fields, "id = ?");
+
+        Object[] params = Stream.concat(fields.values().stream(), Stream.of(id)).toArray();
+
+        log.info("Actualizando imagen con ID: {} con datos: {}", id, fields);
+
+        jdbcTemplate.update(sql, params);
+
     }
 
     @Override
-    @Transactional
-    public void eliminarImagen(int id) {
-        // Elimina una imagen por su ID
-        if (!existeImagenPorId(id)) {
-            throw new RecursoNoEncontradoException("Imagen", "id", id);
-        }
-        String sql = "DELETE FROM producto_imagen WHERE id = ?";
+    public void borrarImagen(long id) {
+        String sql = DynamicSqlBuilder.buildDeleteSql("producto_imagen", "id = ?");
         jdbcTemplate.update(sql, id);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public int contarImagenesPorProducto(int id) {
-        // Cuenta el número de imágenes asociadas a un producto
-        String sql = "SELECT COUNT(id) FROM producto_imagen WHERE id_producto = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return (count != null) ? count : 0;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int contarImagenes() {
-        // Cuenta el número total de imágenes
-        String sql = "SELECT COUNT(id) FROM producto_imagen";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existeImagenPorId(int id) {
-        // Verifica si existe una imagen con el ID especificado
-        String sql = "SELECT COUNT(id) FROM producto_imagen WHERE id = ?";
+    public boolean existeImagen(long id) {
+        String sql = DynamicSqlBuilder.buildCountSql("producto_imagen", "id = ?");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
-}
 
+    @Override
+    public long contarImagenes() {
+        String sql = DynamicSqlBuilder.buildCountSql("producto_imagen");
+        Long count = jdbcTemplate.queryForObject(sql, Long.class);
+
+        if (count == null) {
+            log.warn("El conteo de imagenes devolvió null, devolviendo 0");
+            return 0L;
+        }
+
+        return count;
+    }
+
+    @Override
+    public long contarImagenesPorTipo(String tipo) {
+        String sql = DynamicSqlBuilder.buildCountSql("producto_imagen", "tipo = ?");
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, tipo);
+
+        if (count == null) {
+            log.warn("El conteo de imagenes devolvió null, devolviendo 0");
+            return 0L;
+        }
+
+        return count;
+    }
+
+    @Override
+    public long contarImagenesPorProducto(long idProducto) {
+        String sql = DynamicSqlBuilder.buildCountSql("producto_imagen", "producto_id = ?");
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, idProducto);
+
+        if (count == null) {
+            log.warn("El conteo de imagenes devolvió null, devolviendo 0");
+            return 0L;
+        }
+
+        return count;
+    }
+
+}

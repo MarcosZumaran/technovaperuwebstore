@@ -2,10 +2,15 @@ package com.technovaperu.technovaperuwebstore.implement;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,202 +18,216 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.ProductoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearProductoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProductoDTO;
 import com.technovaperu.technovaperuwebstore.services.ProductoService;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
-/**
- * Implementación de la interfaz {@link ProductoService} que utiliza JDBC para acceder a la base de datos.
- * 
- * @author Marcos Zumaran
- */
 @Service
 public class ProductoServiceImpl implements ProductoService {
     
-    private final JdbcTemplate jdbcTemplate;
-
     @Autowired
-    public ProductoServiceImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private JdbcTemplate jdbcTemplate;
 
-    /**
-     * RowMapper para convertir los resultados de la consulta en objetos {@link ProductoDTO}.
-     */
-    private final RowMapper<ProductoDTO> productoRowMapper = (rs, rowNum) -> ProductoDTO.builder()
-            .id(rs.getInt("id"))
-            .idProveedor(rs.getInt("id_proveedor"))
+    private static final Logger log = LoggerFactory.getLogger(ProductoServiceImpl.class);
+
+    private final RowMapper<ProductoDTO> rowMapper = (rs, rowNum) -> ProductoDTO.builder()
+            .id(rs.getLong("id"))
             .nombre(rs.getString("nombre"))
             .descripcion(rs.getString("descripcion"))
-            .stock(rs.getInt("stock"))
+            .idCategoria(rs.getLong("id_categoria"))
+            .estado(rs.getString("estado"))
+            .marca(rs.getString("marca"))
+            .fechaRegistro(rs.getTimestamp("fecha_registro").toLocalDateTime())
+            .fechaActualizacion(rs.getTimestamp("fecha_actualizacion").toLocalDateTime())
             .build();
-    
-    /**
-     * Obtiene todos los productos de la base de datos.
-     * 
-     * @param pagina Número de página a obtener.
-     * @return Lista de productos.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public List<ProductoDTO> obtenerTodosLosProductos(int pagina){
-        if (pagina <= 0) pagina = 1;
-        int offset = (pagina - 1) * 10;
-        int limit = 10;
-        String sql = "SELECT * FROM producto ORDER BY id_producto DESC LIMIT ? OFFSET ?";
-        return jdbcTemplate.query(sql, productoRowMapper, limit, offset);
-    }
 
-    /**
-     * Obtiene todos los productos de una categoría.
-     * 
-     * @param idCategoria ID de la categoría a obtener los productos de.
-     * @param pagina Número de página a obtener.
-     * @return Lista de productos.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public List<ProductoDTO> obtenerProductosPorCategoria(int idCategoria, int pagina){
-        if (pagina <= 0) pagina = 1;
-        int offset = (pagina - 1) * 10;
-        int limit = 10;
-        String sql = "SELECT * FROM producto_categoria WHERE id_categoria = ? ORDER BY id_producto DESC LIMIT ? OFFSET ?";
-        return jdbcTemplate.query(sql, productoRowMapper, idCategoria, limit, offset);
-    }
-
-    /**
-     * Obtiene un producto por su ID.
-     * 
-     * @param id ID del producto a obtener.
-     * @return Producto con el ID especificado.
-     * @throws RecursoNoEncontradoException Si no se encuentra el producto con el ID especificado.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public ProductoDTO obtenerProductoPorId(int id){
+    private List<ProductoDTO> ejecutarConsultaListaProductos(String sql, Object... parametros) {
         try {
-            String sql = "SELECT * FROM producto WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, productoRowMapper, id);
+            log.info("Ejecutando consulta: {}", sql);
+            return jdbcTemplate.query(sql, rowMapper, parametros);
         } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("Producto", "id", id);
+            log.error("Error al consultar la base de datos", e);
+            throw new RecursoNoEncontradoException("Productos", "filtro aplicado", null);
         }
     }
 
-    /**
-     * Crea un nuevo producto.
-     * 
-     * @param producto Información del producto a crear.
-     * @return Producto creado.
-     */
-    @Override 
-    @Transactional
-    public ProductoDTO crearProducto(CrearProductoDTO producto){
-        String sql = "INSERT INTO producto (id_proveedor, nombre, descripcion, stock) VALUES(?, ?, ?, ?)";
+    @Override
+    public List<ProductoDTO> obtenerTodosLosProductos() {
+        return ejecutarConsultaListaProductos("SELECT * FROM producto");
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerProductos(int pagina) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 productos
+        return ejecutarConsultaListaProductos("SELECT * FROM producto LIMIT 10 OFFSET ?", offset);
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerTodosLosProductosPorCategoria(long idCategoria) {
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE id_categoria = ?", idCategoria);
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerTodosLosProductosPorMarca(String marca) {
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE marca = ?", marca);
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerTodosLosProductosPorEstado(String estado) {
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE estado = ?", estado);
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerTodosLosProductosPorNombre(String nombre) {
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE nombre = ?", nombre);
+    }
+
+    @Override
+    public List<ProductoDTO> obetnerTodosLosProductosPorNombreParcial(String nombre) {
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE nombre LIKE ?", "%" + nombre + "%");
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerProductosPorCategoria(int pagina, long idCategoria) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 productos
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE id_categoria = ? LIMIT 10 OFFSET ?", idCategoria, offset);
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerProductosPorMarca(int pagina, String marca) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 productos
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE marca = ? LIMIT 10 OFFSET ?", marca, offset);
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerProductosPorEstado(int pagina, String estado) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 productos
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE estado = ? LIMIT 10 OFFSET ?", estado, offset);
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerProductosPorNombre(int pagina, String nombre) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 productos
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE nombre = ? LIMIT 10 OFFSET ?", nombre, offset);
+    }
+
+    @Override
+    public List<ProductoDTO> obtenerProductosPorNombreParcial(int pagina, String nombre) {
+        int offset = (pagina - 1) * 10; // Asumiendo que cada página tiene 10 productos
+        return ejecutarConsultaListaProductos("SELECT * FROM producto WHERE nombre LIKE ? LIMIT 10 OFFSET ?", "%" + nombre + "%", offset);
+    }
+
+    @Override
+    public ProductoDTO obtenerProductoPorId(long id) {
+        try{
+            log.info("Obteniendo producto por ID: {}", id);
+            return jdbcTemplate.queryForObject("SELECT * FROM producto WHERE id = ?", rowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Productos", "filtro aplicado", String.valueOf(id));
+        }
+    }
+
+    @Override
+    public ProductoDTO crearProducto(CrearProductoDTO productoDTO) {
+        
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("id_categoria", productoDTO.getIdCategoria());
+        fields.put("nombre", productoDTO.getNombre());
+        fields.put("descripcion", productoDTO.getDescripcion());
+        fields.put("estado", productoDTO.getEstado());
+        fields.put("marca", productoDTO.getMarca());
+        fields.put("fecha_creacion", Timestamp.valueOf(LocalDateTime.now()));
+        fields.put("fecha_actualizacion", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildInsertSql("producto", fields);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, producto.getIdProveedor());
-            ps.setString(2, producto.getNombre());
-            ps.setString(3, producto.getDescripcion());
-            ps.setInt(4, producto.getStock());
+        log.info("Creando producto con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
 
         Number key = keyHolder.getKey();
         if (key == null) {
-            throw new RuntimeException("No se pudo obtener el ID generado para el producto");
+            log.error("Error al crear el producto, clave generada es nula");
+            throw new RuntimeException("Error al crear el producto, clave generada es nula");
         }
 
-        Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        return obtenerProductoPorId(key.longValue());
 
-        return ProductoDTO.builder()
-                .id(id)
-                .idProveedor(producto.getIdProveedor())
-                .nombre(producto.getNombre())
-                .descripcion(producto.getDescripcion())
-                .stock(producto.getStock())
-                .fechaRegistro(LocalDateTime.now())
-                .fechaActualizacion(LocalDateTime.now())
-                .build();
     }
-    
-    /**
-     * Actualiza un producto existente.
-     * 
-     * @param id ID del producto a actualizar.
-     * @param producto Información del producto actualizado.
-     * @throws RecursoNoEncontradoException Si no se encuentra el producto con el ID especificado.
-     */
-    @Override 
-    @Transactional
-    public void actualizarProducto(int id, ActualizarProductoDTO producto){
-        if (!existeProductoPorId(id)) {
-            throw new RecursoNoEncontradoException("Producto", "id", id);
+
+    @Override
+    public void actualizarProducto(long id, ActualizarProductoDTO productoDTO) {
+        if(!existeProducto(id)){
+            throw new RecursoNoEncontradoException("Productos", "filtro aplicado", String.valueOf(id));
         }
-        String sql = "UPDATE producto SET id_proveedor = ?, nombre = ?, descripcion = ?, stock = ? WHERE id = ?";
-        jdbcTemplate.update(sql, producto.getIdProveedor(), producto.getNombre(), producto.getDescripcion(), producto.getStock(), id);
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        if (productoDTO.getIdCategoria() != null)
+            fields.put("id_categoria", productoDTO.getIdCategoria());
+
+        if (productoDTO.getNombre() != null)
+            fields.put("nombre", productoDTO.getNombre());
+
+        if (productoDTO.getDescripcion() != null)
+            fields.put("descripcion", productoDTO.getDescripcion());
+
+        if (productoDTO.getEstado() != null)
+            fields.put("estado", productoDTO.getEstado());
+
+        if (productoDTO.getMarca() != null)
+            fields.put("marca", productoDTO.getMarca());
+
+        if (fields.isEmpty()) {
+            log.warn("No se proporcionaron campos para actualizar el producto con ID: {}", id);
+            return;
+        }
+
+        fields.put("fecha_actualizacion", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildUpdateSql("producto", fields, "id = ?");
+
+        log.info("Actualizando producto con ID: {} con datos: {}", id, fields);
+
+        Object[] params = Stream.concat(fields.values().stream(), Stream.of(id)).toArray();
+
+        jdbcTemplate.update(sql, params);
     }
-    
-    /**
-     * Elimina un producto existente.
-     * 
-     * @param id ID del producto a eliminar.
-     * @throws RecursoNoEncontradoException Si no se encuentra el producto con el ID especificado.
-     */
-    @Override 
-    @Transactional
-    public void eliminarProducto(int id){
-        if (!existeProductoPorId(id)) {
-            throw new RecursoNoEncontradoException("Producto", "id", id);
+
+    @Override
+    public void borrarProducto(long id) {
+
+        if(!existeProducto(id)){
+            log.error("Producto con ID {} no encontrado", id);
+            throw new RecursoNoEncontradoException("Productos", "filtro aplicado", String.valueOf(id));
         }
-        String sql = "DELETE FROM producto WHERE id = ?";
+
+        log.info("Borrando producto con ID: {}", id);
+
+        String sql = DynamicSqlBuilder.buildDeleteSql("producto", "id = ?");
         jdbcTemplate.update(sql, id);
     }
-
-    /**
-     * Obtiene el número de productos por categoría.
-     * 
-     * @param idCategoria ID de la categoría a obtener el número de productos de.
-     * @return Número de productos por categoría.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public int contarProductosPorCategoria(int idCategoria){
-        String sql = "SELECT COUNT(id) FROM producto WHERE id_categoria = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
-    }
     
-    /**
-     * Obtiene el número total de productos.
-     * 
-     * @return Número total de productos.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public int contarProductos(){
-        String sql = "SELECT COUNT(id) FROM producto";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
-    }
-
-    /**
-     * Verifica si existe un producto con el ID especificado.
-     * 
-     * @param id ID del producto a verificar.
-     * @return Si existe el producto con el ID especificado.
-     */
     @Override
-    @Transactional(readOnly = true)
-    public boolean existeProductoPorId(int id) {
-        String sql = "SELECT COUNT(id) FROM producto WHERE id = ?";
+    public boolean existeProducto(long id) {
+        String sql = DynamicSqlBuilder.buildCountSql("producto", "id = ?");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
     }
-}
 
+}

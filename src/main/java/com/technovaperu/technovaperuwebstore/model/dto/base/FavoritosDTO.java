@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class FavoritosDTO {
 
     @Schema(description = "ID único del favorito", example = "1")
-    private int id;
+    private long id;
 
     @NotNull(message = "El id de usuario no puede estar vacío")
     @Positive(message = "El id de usuario debe ser positivo")

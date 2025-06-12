@@ -4,139 +4,163 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.transaction.annotation.Transactional;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
-import com.technovaperu.technovaperuwebstore.exception.RecursoDuplicadoException;
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.CarritoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearCarritoDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarCarritoDTO;
 import com.technovaperu.technovaperuwebstore.services.CarritoService;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
 @Service
 public class CarritoServiceImpl implements CarritoService {
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // RowMapper reutilizable para CarritoDTO, es un conversion de filas SQL a Objetos, en este caso a CarritoDTO
+    private static final Logger log = LoggerFactory.getLogger(CarritoServiceImpl.class);
+
+    // Row mapper para mapear los resultados de la consulta a un objeto CarritoDTO
     private final RowMapper<CarritoDTO> carritoRowMapper = (rs, rowNum) -> CarritoDTO.builder()
-            .id(rs.getInt("id"))
-            .idUsuario(rs.getInt("id_usuario"))
+            .id(rs.getLong("id"))
+            .idUsuario(rs.getLong("id_usuario"))
+            .estado(rs.getString("estado"))
             .fechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime())
+            .fechaCambioEstado(rs.getTimestamp("fecha_cambio_estado").toLocalDateTime())
             .build();
 
-    /**
-     * Obtiene un carrito por su ID
-     * @param id ID del carrito a buscar
-     * @return CarritoDTO con la información del carrito
-     * @throws RecursoNoEncontradoException si no existe un carrito con ese ID
-     */
-    @Override
-    public CarritoDTO obtenerCarritoPorId(int id) {
-        String sql = "SELECT * FROM carrito WHERE id = ?";
+
+    private List<CarritoDTO> ejecutarConsultaListaCarritos(String sql, Object... parametros) {
         try {
-            return jdbcTemplate.queryForObject(sql, carritoRowMapper, id);
+            log.info("Ejecutando consulta: {}", sql);
+            return jdbcTemplate.query(sql, carritoRowMapper, parametros);
         } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("No se encontró carrito con ID: " + id, sql, e);
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Carritos", "filtro aplicado", null);
         }
     }
 
-    /**
-     * Obtiene un carrito por su usuario
-     * @param idUsuario ID del usuario a buscar
-     * @return CarritoDTO con la información del carrito
-     * @throws RecursoNoEncontradoException si no existe un carrito para ese usuario
-     */
-    @Override
-    public CarritoDTO obtenerCarritoPorUsuario(int idUsuario) {
-        String sql = "SELECT * FROM carrito WHERE id_usuario = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, carritoRowMapper, idUsuario); 
-        } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("No se encontró carrito con ID de usuario: " + idUsuario, sql, e);
+    private static final Set<String> ESTADOS_VALIDOS = Set.of("ACTIVO", "PROCESADO", "CANCELADO");
+
+    private void validarEstado(String estado) {
+        if (estado == null || !ESTADOS_VALIDOS.contains(estado.toUpperCase())) {
+            log.error("Estado inválido: {}", estado);
+            throw new IllegalArgumentException("Estado inválido: " + estado);
         }
     }
 
-    /**
-     * Crea un nuevo carrito
-     * @param carrito datos del carrito a crear
-     * @return ID del carrito creado
-     * @throws RecursoDuplicadoException si el usuario ya tiene un carrito
-     */
     @Override
-    @Transactional
-    public int crearCarrito(CrearCarritoDTO carrito) {
-        // Verificar que no exista ya un carrito para este usuario
-        if (existeCarritoParaUsuario(carrito.getIdUsuario())) {
-            throw new RecursoDuplicadoException(
-                    "El usuario con ID " + carrito.getIdUsuario() + " ya tiene un carrito asignado");
+    public List<CarritoDTO> obtenerCarritos(){
+        return ejecutarConsultaListaCarritos("SELECT * FROM carrito");
+    }
+
+    @Override
+    public List<CarritoDTO> obtenerCarritosPorUsuarioId(long id){
+        return ejecutarConsultaListaCarritos("SELECT * FROM carrito WHERE id_usuario = ?", id);
+    }
+
+    @Override
+    public CarritoDTO obtenerCarritoPorEstadoPorUsuarioId(long id, String estado){
+        try {
+            validarEstado(estado);
+            log.info("Obteniendo carrito por ID: {}", id);
+            return jdbcTemplate.queryForObject("SELECT * FROM carrito WHERE id_usuario = ? AND estado = ?", carritoRowMapper, id, estado);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Carrito", "id", id);
         }
+    }
 
-        // Si no se proporciona fecha de creación, usar la fecha actual
-        final LocalDateTime fechaCreacionFinal = carrito.getFechaCreacion() != null ? carrito.getFechaCreacion()
-                : LocalDateTime.now();
+    @Override
+    public CarritoDTO obtenerCarritoPorId(long id){
+        try {
+            log.info("Obteniendo carrito por ID: {}", id);
+            return jdbcTemplate.queryForObject("SELECT * FROM carrito WHERE id = ?", carritoRowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            log.error("Error al ejecutar la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Carrito", "id", id);
+        }
+    }
 
-        // Insertar el carrito y obtener el ID generado
-        String sql = "INSERT INTO carrito (id_usuario, fecha_creacion) VALUES (?, ?)";
+    @Override
+    public CarritoDTO crearCarrito(CrearCarritoDTO carritoDTO){
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("id_usuario", carritoDTO.getIdUsuario());
+        fields.put("estado", carritoDTO.getEstado());
+        fields.put("fecha_creacion", Timestamp.valueOf(LocalDateTime.now()));
+        fields.put("fecha_cambio_estado", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildInsertSql("carrito", fields);
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, carrito.getIdUsuario());
-            ps.setTimestamp(2, Timestamp.valueOf(fechaCreacionFinal));
+        log.info("Creando carrito con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
 
         Number key = keyHolder.getKey();
         if (key == null) {
-            throw new RuntimeException("No se pudo obtener el ID generado para el carrito");
+            log.error("Error al crear el carrito, clave generada es nula");
+            throw new RecursoNoEncontradoException("Carritos", "filtro aplicado", null);
         }
-        return key.intValue();
+
+        return obtenerCarritoPorId(key.longValue());
+
     }
 
-    /**
-     * Cuenta el número total de carritos
-     * @return Cantidad de carritos existentes
-     */
     @Override
-    public int contarCarritos() {
-        String sql = "SELECT COUNT(id) FROM carrito";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
+    public void actualizarCarrito(long id, ActualizarCarritoDTO carritoDTO){
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("estado", carritoDTO.getEstado());
+        fields.put("fecha_cambio_estado", Timestamp.valueOf(LocalDateTime.now()));
+
+        String sql = DynamicSqlBuilder.buildUpdateSql("carrito", fields, "id = ?");
+
+        log.info("Actualizando carrito con datos: {}", fields);
+
+        jdbcTemplate.update(sql, carritoDTO.getEstado(), Timestamp.valueOf(LocalDateTime.now()), id);
     }
 
-    /**
-     * Verifica si existe un carrito para un usuario específico
-     * @param idUsuario ID del usuario a verificar
-     * @return true si existe un carrito para ese usuario, false en caso contrario
-     */
     @Override
-    public boolean existeCarritoParaUsuario(int idUsuario) {
-        String sql = "SELECT COUNT(id) FROM carrito WHERE id_usuario = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, idUsuario);
-        return (count != null && count > 0);
-    }
-
-    /**
-     * Elimina un carrito por su ID
-     * @param id ID del carrito a eliminar
-     * @throws RecursoNoEncontradoException si no existe un carrito con ese ID
-     */
-    @Override
-    @Transactional
-    public void eliminarCarrito(int id) {
-        String sql = "DELETE FROM carrito WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, id);
-        if (rowsAffected == 0) {
-            throw new RecursoNoEncontradoException("No se encontró carrito con ID: " + id, sql, rowsAffected);
+    public void borrarCarrito(long id){
+        if (!existeCarrito(id)) {
+            log.warn("No se encontró el carrito con ID: {}", id);
+            throw new RecursoNoEncontradoException("Carrito", "ID", id);
         }
+        log.info("Borrando carrito con ID: {}", id);
+        String sql = DynamicSqlBuilder.buildDeleteSql("carrito", "id = ?");
+        jdbcTemplate.update(sql, id);
     }
+
+    @Override
+    public boolean existeCarrito(long id){
+        String sql = DynamicSqlBuilder.buildCountSql("carrito", "id = ?");
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count != null && count > 0;
+    }
+
 }

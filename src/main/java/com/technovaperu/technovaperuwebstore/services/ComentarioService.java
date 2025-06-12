@@ -7,12 +7,12 @@ import com.technovaperu.technovaperuwebstore.model.dto.create.CrearComentarioDTO
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarComentarioDTO;
 
 public interface ComentarioService {
-    List<ComentarioDTO> obtenerComentariosPorProducto(int idProducto, int pagina);
-    ComentarioDTO obtenerComentarioPorId(int id);
+    List<ComentarioDTO> obtenerComentariosPorProducto(long idProducto, int pagina);
+    ComentarioDTO obtenerComentarioPorId(long id);
     ComentarioDTO crearComentario(CrearComentarioDTO comentario);
-    void actualizarComentario(int id, ActualizarComentarioDTO comentario);
-    void eliminarComentario(int id);
-    int contarComentariosDeProducto(int idProducto);
+    void actualizarComentario(long id, ActualizarComentarioDTO comentario);
+    void eliminarComentario(long id);
+    int contarComentariosDeProducto(long idProducto);
     int contarComentarios();
-    boolean existeComentarioPorId(int id);
+    boolean existeComentarioPorId(long id);
 }

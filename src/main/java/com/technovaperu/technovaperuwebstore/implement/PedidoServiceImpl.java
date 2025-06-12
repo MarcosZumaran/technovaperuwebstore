@@ -2,10 +2,15 @@ package com.technovaperu.technovaperuwebstore.implement;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,178 +18,211 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.technovaperu.technovaperuwebstore.exception.RecursoNoEncontradoException;
 import com.technovaperu.technovaperuwebstore.model.dto.base.PedidoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearPedidoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarPedidoDTO;
 import com.technovaperu.technovaperuwebstore.services.PedidoService;
+import com.technovaperu.technovaperuwebstore.util.DynamicSqlBuilder;
 
 @Service
-public class PedidoServiceImpl implements PedidoService{
-    
-    private final JdbcTemplate jdbcTemplate;
+public class PedidoServiceImpl implements PedidoService {
 
     @Autowired
-    public PedidoServiceImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private JdbcTemplate jdbcTemplate;
 
-    // RowMapper for mapping ResultSet rows to PedidoDTO objects
+    private static final Logger log = LoggerFactory.getLogger(PedidoServiceImpl.class);
+
     private final RowMapper<PedidoDTO> pedidoRowMapper = (rs, rowNum) -> PedidoDTO.builder()
-            .id(rs.getInt("id"))
-            .idUsuario(rs.getInt("id_usuario"))
+            .id(rs.getLong("id"))
+            .idUsuario(rs.getLong("id_usuario"))
+            .fechaRegistro(rs.getTimestamp("fecha_registro").toLocalDateTime())
             .estado(rs.getString("estado"))
             .total(rs.getBigDecimal("total"))
-            .direccionEnvio(rs.getString("direccion_envio"))
+            .subtotal(rs.getBigDecimal("subtotal"))
+            .descuento(rs.getBigDecimal("descuento"))
+            .impuestos(rs.getBigDecimal("impuestos"))
+            .metodoPago(rs.getString("metodo_pago"))
+            .direccionEntrega(rs.getString("direccion_entrega"))
+            .fechaConfirmacion(rs.getTimestamp("fecha_confirmacion") != null
+                    ? rs.getTimestamp("fecha_confirmacion").toLocalDateTime()
+                    : null)
+            .fechaEntrega(rs.getTimestamp("fecha_entrega") != null ? rs.getTimestamp("fecha_entrega").toLocalDateTime()
+                    : null)
+            .cancelado(rs.getBoolean("cancelado"))
+            .fechaCancelacion(rs.getTimestamp("fecha_cancelacion") != null
+                    ? rs.getTimestamp("fecha_cancelacion").toLocalDateTime()
+                    : null)
             .build();
-    
-    /**
-     * Obtiene una lista de pedidos por ID de usuario.
-     * 
-     * @param idUsuario ID del usuario.
-     * @param pagina Número de página para la paginación.
-     * @return Lista de objetos PedidoDTO.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public List<PedidoDTO> obtenerPedidosPorUsuario(int idUsuario, int pagina){
-        if (pagina <= 0) pagina = 1;
-        int offset = (pagina - 1) * 10;
-        int limit = 10;
-        String sql = "SELECT * FROM pedido WHERE id_usuario = ? ORDER BY fecha_pedido DESC LIMIT ? OFFSET ?";
-        return jdbcTemplate.query(sql, pedidoRowMapper, idUsuario, limit, offset);
-    }
 
-    /**
-     * Obtiene un pedido por su ID.
-     * 
-     * @param id ID del pedido.
-     * @return Objeto PedidoDTO.
-     * @throws RecursoNoEncontradoException si no se encuentra el pedido.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public PedidoDTO obtenerPedidoPorId(int id){
+    private List<PedidoDTO> ejecutarConsultaListaPedidos(String sql, Object... parametros) {
         try {
-            String sql = "SELECT * FROM pedido WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, pedidoRowMapper, id);
+            return jdbcTemplate.query(sql, pedidoRowMapper, parametros);
         } catch (EmptyResultDataAccessException e) {
-            throw new RecursoNoEncontradoException("Pedido", "id", id);
+            log.warn("No se encontraron resultados para la consulta: {}", e.getMessage());
+            throw new RecursoNoEncontradoException("Pedidos", "filtro aplicado", null);
         }
     }
 
-    /**
-     * Crea un nuevo pedido.
-     * 
-     * @param pedido Datos para crear el pedido.
-     * @return Objeto PedidoDTO creado.
-     */
-    @Override 
-    @Transactional
-    public PedidoDTO crearPedido(CrearPedidoDTO pedido){
-        String sql = "INSERT INTO pedido (id_usuario, direccion_envio, total, estado) VALUES(?, ?, ?, ?)";
+    @Override
+    public List<PedidoDTO> obtenerTodosLosPedidos() {
+        return ejecutarConsultaListaPedidos("SELECT * FROM pedido ORDER BY id");
+    }
+
+    @Override
+    public List<PedidoDTO> obtenerPedidos(int pagina) {
+        int offset = (pagina - 1) * 10;
+        return ejecutarConsultaListaPedidos("SELECT * FROM pedido ORDER BY id LIMIT 10 OFFSET ?", offset);
+    }
+
+    @Override
+    public List<PedidoDTO> obtenerPedidosPorUsuario(int pagina, long idUsuario) {
+        int offset = (pagina - 1) * 10;
+        return ejecutarConsultaListaPedidos("SELECT * FROM pedido WHERE id_usuario = ? ORDER BY id LIMIT 10 OFFSET ?",
+                idUsuario, offset);
+    }
+
+    @Override
+    public List<PedidoDTO> obtenerPedidosPorUsuarioPorEstado(int pagina, long idUsuario, String estado) {
+        int offset = (pagina - 1) * 10;
+        return ejecutarConsultaListaPedidos(
+                "SELECT * FROM pedido WHERE id_usuario = ? AND estado = ? ORDER BY id LIMIT 10 OFFSET ?", idUsuario,
+                estado, offset);
+    }
+
+    @Override
+    public List<PedidoDTO> obtenerPedidosPorEstado(int pagina, String estado) {
+        int offset = (pagina - 1) * 10;
+        return ejecutarConsultaListaPedidos("SELECT * FROM pedido WHERE estado = ? ORDER BY id LIMIT 10 OFFSET ?",
+                estado, offset);
+    }
+
+    @Override
+    public PedidoDTO obtenerPedidoPorId(long id) {
+        String sql = "SELECT * FROM pedido WHERE id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, pedidoRowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new RecursoNoEncontradoException("Pedido", "ID", id);
+        }
+    }
+
+    @Override
+    public PedidoDTO crearPedido(CrearPedidoDTO pedidoDTO) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        fields.put("id_usuario", pedidoDTO.getIdUsuario());
+        fields.put("fecha_registro", Timestamp.valueOf(now));
+        fields.put("estado", pedidoDTO.getEstado());
+        fields.put("total", pedidoDTO.getTotal());
+        fields.put("subtotal", pedidoDTO.getSubtotal());
+        fields.put("descuento", pedidoDTO.getDescuento());
+        fields.put("impuestos", pedidoDTO.getImpuestos());
+        fields.put("metodo_pago", pedidoDTO.getMetodoPago());
+        fields.put("direccion_entrega", pedidoDTO.getDireccionEntrega());
+
+        String sql = DynamicSqlBuilder.buildInsertSql("pedido", fields);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, pedido.getIdUsuario());
-            ps.setString(2, pedido.getDireccionEnvio());
-            ps.setBigDecimal(3, pedido.getTotal());
-            ps.setString(4, pedido.getEstado());
+        log.info("Creando pedido con datos: {}", fields);
+
+        jdbcTemplate.update(con -> {
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = 1;
+            for (Object value : fields.values()) {
+                ps.setObject(i++, value);
+            }
             return ps;
         }, keyHolder);
 
-        Number key = keyHolder.getKey();
-        if (key == null) {
-            throw new RuntimeException("No se pudo obtener el ID generado para el pedido");
+        Number generatedId = keyHolder.getKey();
+
+        if (generatedId == null) {
+            log.error("No se pudo obtener el ID del pedido creado.");
+            throw new RuntimeException("No se pudo obtener el ID del pedido creado.");
         }
 
-        Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
+        log.info("Pedido creado con ID: {}", generatedId);
 
-        return PedidoDTO.builder()
-                .id(id)
-                .idUsuario(pedido.getIdUsuario())
-                .estado(pedido.getEstado())
-                .total(pedido.getTotal())
-                .direccionEnvio(pedido.getDireccionEnvio())
-                .fechaPedido(LocalDateTime.now())
-                .build();
+        return obtenerPedidoPorId(generatedId.longValue());
     }
-    
-    /**
-     * Actualiza un pedido existente.
-     * 
-     * @param id ID del pedido.
-     * @param pedido Datos para actualizar el pedido.
-     * @throws RecursoNoEncontradoException si no se encuentra el pedido.
-     */
-    @Override 
-    @Transactional
-    public void actualizarPedido(int id, ActualizarPedidoDTO pedido){
-        if (!existePedidoPorId(id)) {
-            throw new RecursoNoEncontradoException("Pedido", "id", id);
+
+    @Override
+    public void actualizarPedido(long id, ActualizarPedidoDTO dto) {
+
+        if (!existePedido(id)) {
+            log.warn("No se encontró el pedido con ID: {}", id);
+            throw new RecursoNoEncontradoException("Pedido", "ID", id);
         }
-        String sql = "UPDATE pedido SET direccion_envio = ? WHERE id = ?";
-        jdbcTemplate.update(sql, pedido.getDireccionEnvio(), id);
+
+        Map<String, Object> fields = new LinkedHashMap<>();
+
+        if (dto.getEstado() != null)
+            fields.put("estado", dto.getEstado());
+        if (dto.getFechaConfirmacion() != null)
+            fields.put("fecha_confirmacion", Timestamp.valueOf(dto.getFechaConfirmacion()));
+        if (dto.getFechaEntrega() != null)
+            fields.put("fecha_entrega", Timestamp.valueOf(dto.getFechaEntrega()));
+        if (dto.getCancelado() != null)
+            fields.put("cancelado", dto.getCancelado());
+        if (dto.getFechaCancelacion() != null)
+            fields.put("fecha_cancelacion", Timestamp.valueOf(dto.getFechaCancelacion()));
+        if (dto.getMetodoPago() != null)
+            fields.put("metodo_pago", dto.getMetodoPago());
+        if (dto.getDireccionEntrega() != null)
+            fields.put("direccion_entrega", dto.getDireccionEntrega());
+        if (dto.getSubtotal() != null)
+            fields.put("subtotal", dto.getSubtotal());
+        if (dto.getDescuento() != null)
+            fields.put("descuento", dto.getDescuento());
+        if (dto.getImpuestos() != null)
+            fields.put("impuestos", dto.getImpuestos());
+        if (dto.getTotal() != null)
+            fields.put("total", dto.getTotal());
+
+        if (fields.isEmpty()){
+            log.warn("No se proporcionaron campos para actualizar el pedido con ID: {}", id);
+            return;
+        }
+
+        String sql = DynamicSqlBuilder.buildUpdateSql("pedido", fields, "id = ?");
+
+        Object[] params = Stream.concat(fields.values().stream(), Stream.of(id)).toArray();
+
+        log.info("Actualizando pedido con ID {} con los siguientes campos: {}", id, fields);
+
+        jdbcTemplate.update(sql, params);
     }
-    
-    /**
-     * Elimina un pedido por su ID.
-     * 
-     * @param id ID del pedido.
-     * @throws RecursoNoEncontradoException si no se encuentra el pedido.
-     */
-    @Override 
-    @Transactional
-    public void eliminarPedido(int id){
-        if (!existePedidoPorId(id)) {
-            throw new RecursoNoEncontradoException("Pedido", "id", id);
-        }
-        String sql = "DELETE FROM pedido WHERE id = ?";
+
+    @Override
+    public void borrarPedido(long id) {
+        String sql = DynamicSqlBuilder.buildDeleteSql("pedido", "id = ?");
         jdbcTemplate.update(sql, id);
     }
 
-    /**
-     * Cuenta el número total de pedidos por usuario.
-     * 
-     * @param idUsuario ID del usuario.
-     * @return Número de pedidos.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public int contarPedidosPorUsuario(int idUsuario){
-        String sql = "SELECT COUNT(id) FROM pedido WHERE id_usuario = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, idUsuario);
-        return (count != null) ? count : 0;
-    }
-    
-    /**
-     * Cuenta el número total de pedidos.
-     * 
-     * @return Número total de pedidos.
-     */
-    @Override 
-    @Transactional(readOnly = true)
-    public int contarPedidos(){
-        String sql = "SELECT COUNT(id) FROM pedido";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
-        return (count != null) ? count : 0;
-    }
-
-    /**
-     * Verifica si existe un pedido por su ID.
-     * 
-     * @param id ID del pedido.
-     * @return true si existe, false en caso contrario.
-     */
     @Override
-    @Transactional(readOnly = true)
-    public boolean existePedidoPorId(int id) {
-        String sql = "SELECT COUNT(id) FROM pedido WHERE id = ?";
+    public boolean existePedido(long id) {
+        String sql = DynamicSqlBuilder.buildCountSql("pedido", "id = ?");
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
         return count != null && count > 0;
+    }
+
+    @Override
+    public long contarPedidos() {
+        String sql = DynamicSqlBuilder.buildCountSql("pedido");
+        Long count = jdbcTemplate.queryForObject(sql, Long.class);
+
+        if (count == null) {
+            log.warn("El conteo de pedidos devolvió null, devolviendo 0");
+            return 0L; // la L al final indica que es un long
+        }
+
+        return count;
     }
 
 }
