@@ -7,11 +7,13 @@ import com.technovaperu.technovaperuwebstore.model.dto.create.CrearCategoriaDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarCategoriaDTO;
 
 public interface CategoriaService {
+
     List<CategoriaDTO> obtenerTodasLasCategorias();
-    CategoriaDTO obtenerCategoriaPorId(int id);
-    CategoriaDTO crearCategoria(CrearCategoriaDTO categoria);
-    void actualizarCategoria(int id, ActualizarCategoriaDTO categoria);
-    void eliminarCategoria(int id);
-    int contarCategorias();
-    boolean existeCategoriaPorId(int id);
+    List<CategoriaDTO> obtenerCategorias(int pagina);
+    CategoriaDTO obtenerCategoriaPorId(long id);
+    CategoriaDTO obtenerCategoriaPorProducto(long idProducto);
+    CategoriaDTO crearCategoria(CrearCategoriaDTO categoriaDTO);
+    void actualizarCategoria(long id, ActualizarCategoriaDTO categoriaDTO);
+    void borrarCategoria(long id);
+    boolean existeCategoria(long id);
 }

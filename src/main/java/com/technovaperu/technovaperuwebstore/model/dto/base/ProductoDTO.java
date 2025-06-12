@@ -35,6 +35,11 @@ public class ProductoDTO {
     @Schema(description = "Descripción del producto", example = "Una mesa de madera")
     private String descripcion;
 
+    @NotBlank(message = "El material del producto no puede estar en blanco")
+    @Length(min = 3, max = 50, message = "El marca del producto debe tener entre 3 y 50 caracteres")
+    @Schema(description = "Marca del producto", example = "ASUS")
+    private String marca;
+
     @Positive(message = "El id de la categoria no puede ser negativo")
     @Schema(description = "Identificador de la categoria", example = "1")
     private long idCategoria;

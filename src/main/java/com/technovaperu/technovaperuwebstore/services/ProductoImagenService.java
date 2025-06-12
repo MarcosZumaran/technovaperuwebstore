@@ -8,12 +8,19 @@ import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarProducto
 
 public interface ProductoImagenService {
 
-    List<ProductoImagenDTO> obtenerImagenesPorProducto(int id);
-    ProductoImagenDTO obtenerImagenPorId(int id);
-    ProductoImagenDTO crearImagen(CrearProductoImagenDTO imagen);
-    void actualizarImagen(int id, ActualizarProductoImagenDTO imagen);
-    void eliminarImagen(int id);
-    int contarImagenesPorProducto(int id);
-    int contarImagenes();
-    boolean existeImagenPorId(int id);
+    List<ProductoImagenDTO> obtenerImagenesPorProducto(long idProducto);
+    List<ProductoImagenDTO> obtenerImagenesPorProductoYTipo(long idProducto, String tipo);
+    List<ProductoImagenDTO> obtenerTodasLasImagenes();
+    List<ProductoImagenDTO> obtenerImagenes(int pagina);
+    List<ProductoImagenDTO> obtenerTodasLasImagenesPorTipo(String tipo);
+    List<ProductoImagenDTO> obtenerImagenesPorTipo(int pagina, String tipo);
+    ProductoImagenDTO obtenerImagenPorId(long id);
+    ProductoImagenDTO crearImagen(CrearProductoImagenDTO imagenDTO);
+    void actualizarImagen(long id, ActualizarProductoImagenDTO imagenDTO);
+    void borrarImagen(long id);
+    boolean existeImagen(long id);
+    long contarImagenes();
+    long contarImagenesPorTipo(String tipo);
+    long contarImagenesPorProducto(long idProducto);    
+
 }

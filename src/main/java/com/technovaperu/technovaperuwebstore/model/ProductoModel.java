@@ -46,6 +46,10 @@ public class ProductoModel {
     @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
 
+    @Column(name = "marca", length = 50)
+    @Schema(description = "Marca del producto", example = "ASUS")
+    private String marca;
+
     @Column(name = "detalles_producto", columnDefinition = "TEXT")
     private String detalles_producto;
 
@@ -74,16 +78,20 @@ public class ProductoModel {
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductoPresentacionModel> presentaciones;
 
-    public ProductoModel(ProveedorModel proveedor, CategoriaModel categorias,
-            String nombre, String descripcion, String detalles_producto, LocalDateTime fechaRegistro,
+    public ProductoModel(ProveedorModel proveedor, CategoriaModel categorias, String nombre, String descripcion,
+            String marca, String detalles_producto, String estado, LocalDateTime fechaRegistro,
             LocalDateTime fechaActualizacion) {
         this.proveedor = proveedor;
         this.categorias = categorias;
         this.nombre = nombre;
         this.descripcion = descripcion;
+        this.marca = marca;
         this.detalles_producto = detalles_producto;
+        this.estado = estado;
         this.fechaRegistro = fechaRegistro;
         this.fechaActualizacion = fechaActualizacion;
     }
+
+    
 
 }

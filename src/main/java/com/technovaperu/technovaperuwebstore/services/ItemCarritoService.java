@@ -7,11 +7,14 @@ import com.technovaperu.technovaperuwebstore.model.dto.create.CrearItemCarritoDT
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarItemCarritoDTO;
 
 public interface ItemCarritoService {
-    List<ItemCarritoDTO> obtenerItemsCarritoPorCarrito(int idCarrito, int pagina);
-    ItemCarritoDTO obtenerItemCarritoPorId(int id);
-    ItemCarritoDTO crearItemCarrito(CrearItemCarritoDTO item);
-    void actualizarItemCarrito(int id, ActualizarItemCarritoDTO item);
-    void eliminarItemCarrito(int id);
-    int contarItemsCarrito();
-    boolean existeItemCarritoPorId(int id);
+    List<ItemCarritoDTO> obtenerTodosLosItemsCarrito();
+    List<ItemCarritoDTO> obtenerItemsCarrito(int pagina);
+    List<ItemCarritoDTO> obtenerItemsCarritoPorCarrito(int pag, long idCarrito);
+    List<ItemCarritoDTO> obtenerItemsCarritoPorCarritoSiEsActivo(int pagina, long idCarrito);
+    List<ItemCarritoDTO> obtenerItemsCarritoPorCarritoSiNoEsActivo(int pagina, long idCarrito);
+    ItemCarritoDTO obtenerItemCarritoPorId(long id);
+    ItemCarritoDTO crearItemCarrito(CrearItemCarritoDTO carritoDTO);
+    void actualizarItemCarrito(long id, ActualizarItemCarritoDTO carritoDTO);
+    void borrarItemCarrito(long id);
+    boolean existeItemCarrito(long id);
 }

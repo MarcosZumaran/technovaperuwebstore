@@ -7,12 +7,11 @@ import com.technovaperu.technovaperuwebstore.model.dto.create.CrearDetallePedido
 import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarDetallePedidoDTO;
 
 public interface DetallePedidoService {
-    
-    List<DetallePedidoDTO> obtenerDetallesPedidoPorPedido(int idPedido, int pagina);
-    DetallePedidoDTO obtenerDetallePedidoPorId(int id);
-    DetallePedidoDTO crearDetallePedido(CrearDetallePedidoDTO detalle);
-    void actualizarDetallePedido(int id, ActualizarDetallePedidoDTO detalle);
-    void eliminarDetallePedido(int id);
-    int contarDetallesPedido();
-    boolean existeDetallePedidoPorId(int id);
+    List<DetallePedidoDTO> obtenerDetallePedidos();
+    List<DetallePedidoDTO> obtenerDetallesPedidoPorPedido(int pagina,long pedidoId);
+    DetallePedidoDTO obtenerDetallePedidoPorId(long id);
+    DetallePedidoDTO crearDetallePedido(CrearDetallePedidoDTO detallePedidoDTO);
+    void actualizarDetallePedido(long id, ActualizarDetallePedidoDTO detallePedidoDTO);
+    void borrarDetallePedido(long id);
+    boolean existeDetallePedido(long id);
 }
