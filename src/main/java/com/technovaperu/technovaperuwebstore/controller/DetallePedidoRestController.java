@@ -60,15 +60,9 @@ public class DetallePedidoRestController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> eliminarDetallePedido(@PathVariable int id) {
-        detallePedidoService.eliminarDetallePedido(id);
+    public ResponseEntity<ApiResponse<Void>> eliminarDetallePedido(@PathVariable long id) {
+        detallePedidoService.borrarDetallePedido(id);
         return ResponseEntity.ok(ApiResponse.success(null, "Detalle pedido eliminado con éxito"));
-    }
-
-    @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Integer>> contarDetallesPedido() {
-        int count = detallePedidoService.contarDetallesPedido();
-        return ResponseEntity.ok(ApiResponse.success(count, "Total de detalles pedido obtenido con éxito"));
     }
     
 }

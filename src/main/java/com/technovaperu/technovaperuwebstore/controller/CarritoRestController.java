@@ -1,11 +1,13 @@
 package com.technovaperu.technovaperuwebstore.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,14 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.technovaperu.technovaperuwebstore.model.dto.base.CarritoDTO;
 import com.technovaperu.technovaperuwebstore.model.dto.create.CrearCarritoDTO;
+import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarCarritoDTO;
 import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.CarritoService;
 
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/carrito")
-@CrossOrigin(origins = "*")
 public class CarritoRestController {
 
     private final CarritoService carritoService;
@@ -30,43 +30,53 @@ public class CarritoRestController {
     public CarritoRestController(CarritoService carritoService) {
         this.carritoService = carritoService;
     }
-    
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CarritoDTO>> obtenerCarrito(@PathVariable int id) {
-        CarritoDTO carrito = carritoService.obtenerCarritoPorId(id);
-        return ResponseEntity.ok(ApiResponse.success(carrito, "Carrito obtenido con éxito"));
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<CarritoDTO>>> obtenerCarritos() {
+        List<CarritoDTO> carritos = carritoService.obtenerCarritos();
+        return ResponseEntity.ok(ApiResponse.success(carritos, "Carritos obtenidos correctamente"));
     }
 
-    @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<ApiResponse<CarritoDTO>> obtenerCarritoPorUsuario(@PathVariable int idUsuario) {
-        CarritoDTO carrito = carritoService.obtenerCarritoPorUsuario(idUsuario);
-        return ResponseEntity.ok(ApiResponse.success(carrito, "Carrito obtenido con éxito"));
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<ApiResponse<List<CarritoDTO>>> obtenerCarritosPorUsuarioId(@PathVariable long id) {
+        List<CarritoDTO> carritos = carritoService.obtenerCarritosPorUsuarioId(id);
+        return ResponseEntity.ok(ApiResponse.success(carritos, "Carritos obtenidos correctamente"));
     }
-    
+
+    @GetMapping("/usaurio/{id}/estado/{estado}")
+    public ResponseEntity<ApiResponse<CarritoDTO>> obtenerCarritoPorEstadoPorUsuarioId(@PathVariable long id, @PathVariable String estado) {
+        CarritoDTO carrito = carritoService.obtenerCarritoPorEstadoPorUsuarioId(id, estado);
+        return ResponseEntity.ok(ApiResponse.success(carrito, "Carrito obtenido correctamente"));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CarritoDTO>> obtenerCarritoPorId(@PathVariable long id) {
+        CarritoDTO carrito = carritoService.obtenerCarritoPorId(id);
+        return ResponseEntity.ok(ApiResponse.success(carrito, "Carrito obtenido correctamente"));
+    }
+
     @PostMapping
-    public ResponseEntity<ApiResponse<CarritoDTO>> crearCarrito(@Valid @RequestBody CrearCarritoDTO carritoDTO) {
-        int nuevoId = carritoService.crearCarrito(carritoDTO);
-        CarritoDTO nuevoCarrito = carritoService.obtenerCarritoPorId(nuevoId);
-        return new ResponseEntity<>(
-            ApiResponse.success(nuevoCarrito, "Carrito creado con éxito"),
-            HttpStatus.CREATED);
+    public ResponseEntity<ApiResponse<CarritoDTO>> crearCarrito(@RequestBody CrearCarritoDTO carritoDTO) {
+        CarritoDTO carrito = carritoService.crearCarrito(carritoDTO);
+        return new ResponseEntity<>(ApiResponse.success(carrito, "Carrito creado correctamente"), HttpStatus.CREATED);
     }
-    
-    @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Integer>> contarCarritos() {
-        int cantidad = carritoService.contarCarritos();
-        return ResponseEntity.ok(ApiResponse.success(cantidad, "Total de carritos obtenido con éxito"));
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> actualizarCarrito(@PathVariable long id, @RequestBody ActualizarCarritoDTO carritoDTO) {
+        carritoService.actualizarCarrito(id, carritoDTO);
+        return ResponseEntity.ok(ApiResponse.success(null, "Carrito actualizado correctamente"));
     }
-    
-    @GetMapping("/usuario/{idUsuario}/existe")
-    public ResponseEntity<ApiResponse<Boolean>> existeCarritoParaUsuario(@PathVariable int idUsuario) {
-        boolean existe = carritoService.existeCarritoParaUsuario(idUsuario);
-        return ResponseEntity.ok(ApiResponse.success(existe, "Existe o no el carrito del usuario"));
-    }
-    
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> eliminarCarrito(@PathVariable int id) {
-        carritoService.eliminarCarrito(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Carrito eliminado con éxito"));
+    public ResponseEntity<ApiResponse<Void>> borrarCarrito(@PathVariable long id) {
+        carritoService.borrarCarrito(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Carrito borrado correctamente"));
     }
+
+    @GetMapping("/existe/{id}")
+    public ResponseEntity<ApiResponse<Boolean>> existeCarrito(@PathVariable long id) {
+        Boolean existe = carritoService.existeCarrito(id);
+        return ResponseEntity.ok(ApiResponse.success(existe, "Existe el carrito correctamente"));
+    }
+    
 }

@@ -7,11 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.technovaperu.technovaperuwebstore.model.dto.base.ItemCarritoDTO;
@@ -20,10 +20,8 @@ import com.technovaperu.technovaperuwebstore.model.dto.update.ActualizarItemCarr
 import com.technovaperu.technovaperuwebstore.model.response.ApiResponse;
 import com.technovaperu.technovaperuwebstore.services.ItemCarritoService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-
 @RestController
-@RequestMapping("/api/item-carrito")
+@RequestMapping("/api/itemcarrito")
 public class ItemCarritoRestController {
 
     private final ItemCarritoService itemCarritoService;
@@ -33,43 +31,64 @@ public class ItemCarritoRestController {
         this.itemCarritoService = itemCarritoService;
     }
 
-    @GetMapping("/carrito/{id}")
-    public ResponseEntity<ApiResponse<List<ItemCarritoDTO>>> obtenerItemsCarritoPorCarrito(@PathVariable int id, @RequestParam(name = "pagina", required = false, defaultValue = "1") int pagina) {
-        List<ItemCarritoDTO> itemCarrito = itemCarritoService.obtenerItemsCarritoPorCarrito(id, pagina);
-        return ResponseEntity.ok(ApiResponse.success(itemCarrito, "Items carrito obtenidos con éxito"));
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ItemCarritoDTO>>> obtenerTodosLosItemsCarrito(){
+        List<ItemCarritoDTO> itemsCarrito = itemCarritoService.obtenerTodosLosItemsCarrito();
+        return ResponseEntity.ok(ApiResponse.success(itemsCarrito, "ItemsCarrito obtenidos correctamente"));
+    }
+
+    @GetMapping("/pagina/{pagina}")
+    public ResponseEntity<ApiResponse<List<ItemCarritoDTO>>> obtenerItemsCarrito(@PathVariable int pagina){
+        List<ItemCarritoDTO> itemsCarrito = itemCarritoService.obtenerItemsCarrito(pagina);
+        return ResponseEntity.ok(ApiResponse.success(itemsCarrito, "ItemsCarrito obtenidos correctamente"));
+    }
+
+    @GetMapping("/carrito/{id}/pagina/{pagina}")
+    public ResponseEntity<ApiResponse<List<ItemCarritoDTO>>> obtenerItemsCarritoPorCarrito(@PathVariable long id, @PathVariable int pagina){
+        List<ItemCarritoDTO> itemsCarrito = itemCarritoService.obtenerItemsCarritoPorCarrito(pagina, id);
+        return ResponseEntity.ok(ApiResponse.success(itemsCarrito, "ItemsCarrito obtenidos correctamente"));
+    }
+
+    @GetMapping("/carrito/{id}/pagina/{pagina}/activo")
+    public ResponseEntity<ApiResponse<List<ItemCarritoDTO>>> obtenerItemsCarritoPorCarritoActivo(@PathVariable long id, @PathVariable int pagina){
+        List<ItemCarritoDTO> itemsCarrito = itemCarritoService.obtenerItemsCarritoPorCarritoSiEsActivo(pagina, id);
+        return ResponseEntity.ok(ApiResponse.success(itemsCarrito, "ItemsCarrito obtenidos correctamente"));
+    }
+
+    @GetMapping("/carrito/{id}/pagina/{pagina}/no-activo")
+    public ResponseEntity<ApiResponse<List<ItemCarritoDTO>>> obtenerItemsCarritoPorCarritoSiNoEsActivo(@PathVariable long id, @PathVariable int pagina){
+        List<ItemCarritoDTO> itemsCarrito = itemCarritoService.obtenerItemsCarritoPorCarritoSiNoEsActivo(pagina, id);
+        return ResponseEntity.ok(ApiResponse.success(itemsCarrito, "ItemsCarrito obtenidos correctamente"));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ItemCarritoDTO>> obtenerItemCarritoPorId(@PathVariable int id) {
+    public ResponseEntity<ApiResponse<ItemCarritoDTO>> obtenerItemCarritoPorId(@PathVariable long id){
         ItemCarritoDTO itemCarrito = itemCarritoService.obtenerItemCarritoPorId(id);
-        return ResponseEntity.ok(ApiResponse.success(itemCarrito, "Item carrito obtenido con éxito"));
+        return ResponseEntity.ok(ApiResponse.success(itemCarrito, "ItemCarrito obtenido correctamente"));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ItemCarritoDTO>> crearItemCarrito(@RequestBody CrearItemCarritoDTO itemCarrito) {
-        ItemCarritoDTO itemCarritoCreado = itemCarritoService.crearItemCarrito(itemCarrito);
-        return new ResponseEntity<>(
-            ApiResponse.success(itemCarritoCreado, "Item carrito creado con éxito"),
-            HttpStatus.CREATED
-        );
+    public ResponseEntity<ApiResponse<ItemCarritoDTO>> crearItemCarrito(@RequestBody CrearItemCarritoDTO carritoDTO){
+        ItemCarritoDTO itemCarrito = itemCarritoService.crearItemCarrito(carritoDTO);
+        return new ResponseEntity<>(ApiResponse.success(itemCarrito, "ItemCarrito creado correctamente"), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<ItemCarritoDTO>> actualizarItemCarrito(@PathVariable int id, @RequestBody ActualizarItemCarritoDTO itemCarrito) {
-        itemCarritoService.actualizarItemCarrito(id, itemCarrito);
-        return ResponseEntity.ok(ApiResponse.success(null, "Item carrito actualizado con éxito"));
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> actualizarItemCarrito(@PathVariable long id, @RequestBody ActualizarItemCarritoDTO itemCarritoDTO) {
+        itemCarritoService.actualizarItemCarrito(id, itemCarritoDTO);
+        return ResponseEntity.ok(ApiResponse.success(null, "ItemCarrito actualizado correctamente"));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> eliminarItemCarrito(@PathVariable int id) {
-        itemCarritoService.eliminarItemCarrito(id);
-        return ResponseEntity.ok(ApiResponse.success(null, "Item carrito eliminado con éxito"));
+    public ResponseEntity<ApiResponse<Void>> borrarItemCarrito(@PathVariable long id) {
+        itemCarritoService.borrarItemCarrito(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "ItemCarrito borrado correctamente"));
     }
 
-    @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Integer>> contarItemsCarrito() {
-        int count = itemCarritoService.contarItemsCarrito();
-        return ResponseEntity.ok(ApiResponse.success(count, "Total de items carrito obtenido con éxito"));
+    @GetMapping("/existe/{id}")
+    public ResponseEntity<ApiResponse<Boolean>> existeItemCarrito(@PathVariable long id) {
+        Boolean existe = itemCarritoService.existeItemCarrito(id);
+        return ResponseEntity.ok(ApiResponse.success(existe, "Existe el itemCarrito correctamente"));
     }
-    
+
 }
